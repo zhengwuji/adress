@@ -1,0 +1,8 @@
+/js/*
+  Cache-Control: public, max-age=14400
+
+/css/*
+  Cache-Control: public, max-age=14400
+
+/update.html
+  Cache-Control: no-store

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据更新 · 地址生成器</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 70% -10%, #1e3a8a 0%, #0b1220 55%) fixed, #0b1220;
+    color: #e5eaf5; min-height: 100vh; padding: 40px 20px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin-bottom: 8px; }
+  h1 small { font-size: 14px; color: #93a4c3; font-weight: 400; margin-left: 10px; }
+  .desc { color: #aab8d4; line-height: 1.7; margin-bottom: 20px; font-size: 14px; }
+  .bar { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    padding: 10px 22px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08); color: #e5eaf5; font-size: 14px; cursor: pointer;
+    transition: .15s;
+  }
+  .btn:hover { background: rgba(255,255,255,.16); }
+  .btn.primary { background: #2563eb; border-color: #2563eb; font-weight: 600; }
+  .btn.primary:hover { background: #1d4ed8; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  #log {
+    background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
+    padding: 14px 16px; min-height: 260px; max-height: 420px; overflow: auto;
+    font-family: Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.75;
+    color: #b7c5e0; white-space: pre-wrap; word-break: break-all;
+  }
+  #log .ok { color: #6ee7a0; }
+  #log .skip { color: #fbbf24; }
+  #log .err { color: #f87171; }
+  #done { margin-top: 18px; background: rgba(37,99,235,.12); border: 1px solid rgba(37,99,235,.45);
+          border-radius: 12px; padding: 18px 20px; line-height: 1.8; font-size: 14px; }
+  #done code { background: rgba(0,0,0,.4); padding: 2px 7px; border-radius: 6px; font-size: 13px; }
+  #done pre { background: rgba(0,0,0,.4); padding: 10px 14px; border-radius: 8px; margin: 8px 0; overflow: auto; }
+  .stat { color: #93a4c3; font-size: 13px; margin-left: auto; }
+  a { color: #7cb0ff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>数据更新<small>GeoNames → countries_data.js（浏览器内重建，无需服务器存储）</small></h1>
+  <p class="desc">
+    本页面直接从 GeoNames 拉取 36 个国家/地区的最新邮编数据（经本站 Functions 代理以绕过跨域限制，边緣缓存、不做任何持久化存储），
+    在<b>你的浏览器里</b>完成解析与构建，最终生成新的 <code>js/countries_data.js</code> 供下载替换。全过程不占用任何 KV / R2 / 数据库。
+  </p>
+  <div class="bar">
+    <button class="btn primary" id="btnStart">开始更新</button>
+    <a class="btn" href="/">返回生成器</a>
+    <span class="stat" id="stat"></span>
+  </div>
+  <pre id="log">点击「开始更新」后，将依次下载 36 国数据（约 100MB，耗时取决于网络，一般 1-3 分钟）。</pre>
+  <div id="done" hidden>
+    <p><b>✓ 构建完成！</b>文件已生成（<span id="outInfo"></span>）：</p>
+    <p style="margin:10px 0"><a class="btn primary" id="dl" download="countries_data.js" href="#">下载 countries_data.js</a></p>
+    <p>接下来的两步：</p>
+    <p>1. 用下载的文件替换项目中的 <code>js/countries_data.js</code>（本地目录或 GitHub 仓库里同名文件）。</p>
+    <p>2. 重新部署：</p>
+    <pre>npx wrangler pages deploy .          # 命令行部署
+# 或：把替换后的文件推送到 GitHub，若已连接 Git 集成则自动重新部署</pre>
+  </div>
+</div>
+
+<script>
+/* GeoNames 邮编数据构建器（浏览器版）— 与 tools/build_data.py 逻辑一致 */
+window.UpdateData = (function () {
+  "use strict";
+
+  const COUNTRIES = ["US", "CA", "MX", "BR", "AR", "CL", "CO", "GB", "IE", "FR", "BE",
+    "NL", "DE", "AT", "CH", "IT", "ES", "PT", "PL", "SE", "NO", "DK",
+    "RU", "TR", "CN", "JP", "KR", "MY", "ID", "TH", "PH", "IN",
+    "AE", "ZA", "NZ", "AU"];
+
+  const ZIPS_PER_CITY = 5;          // 每城市保留的邮编样本数
+  const US_CITIES_PER_REGION = 80;  // 美国旗舰数据集：每地区最多城市数
+  const DEFAULT_QUOTA = 300;        // 非美国国家每国总配额
+  const REGION_CAP = 80;            // 配额池内单一地区上限
+
+  const GARBAGE = ["Дти", "ДТИ", "Fudosan", "Sumitomo", "Mitsui", "Biru", "Postfach",
+    "Packstation", "Filiale", "Niederlassung", "Geschäftsstelle", "Briefzentrum",
+    "Briefkasten", "GmbH", "Gesundheitskasse", "Versicherung", "Spedition",
+    "Logistik", "Logistics", "Krankenhaus", "Bundeswehr", "Finanzamt"];
+  const HOT_SUFFIX = /\b(County|District|Township|Parish|Prefecture|Division)\b/;
+  const WEIRD_REGION_KEY = /^L?\d{6,}$/;
+  const US_EXCLUDED = new Set(["AA", "AE", "AP", "", "MH"]);
+
+  // GeoNames US.zip 缺少海外领地且含军事 AA/AE/AP；人工整理的领地城市/邮编，
+  // 坐标由人口普查 ZCTA Gazetteer 校验提供（与 tools/build_data.py 完全一致）。
+  const TERRITORIES = {
+    "PR": {
+      "San Juan": ["00901", "00907", "00909", "00911", "00912", "00915", "00917", "00918", "00920", "00921", "00923", "00925", "00926", "00927"],
+      "Bayamon": ["00956", "00957", "00959", "00960", "00961"],
+      "Carolina": ["00979", "00982", "00983", "00985", "00987"],
+      "Ponce": ["00715", "00716", "00717", "00730", "00731"],
+      "Caguas": ["00725", "00726", "00727"],
+      "Mayaguez": ["00680", "00681", "00682"],
+      "Arecibo": ["00612", "00613", "00614"],
+      "Guaynabo": ["00965", "00966", "00968", "00969"],
+      "Fajardo": ["00738", "00740"],
+      "Humacao": ["00791", "00792"],
+      "Aguadilla": ["00603", "00605"],
+      "Rio Grande": ["00745"],
+      "Cayey": ["00736", "00737"],
+      "Manati": ["00674"],
+      "Toa Baja": ["00949", "00951", "00952"],
+      "Vega Baja": ["00693"],
+      "Guayama": ["00784", "00785"],
+      "Trujillo Alto": ["00976"],
+      "Cidra": ["00739"],
+      "Gurabo": ["00778"],
+      "Juncos": ["00777"],
+      "San Lorenzo": ["00754"],
+      "Las Piedras": ["00771"],
+      "Canovanas": ["00729"],
+      "Loiza": ["00772"],
+      "Naranjito": ["00719"],
+      "Aibonito": ["00705"],
+      "Barranquitas": ["00794"],
+      "Comerio": ["00782"],
+      "Corozal": ["00783"],
+      "Coamo": ["00769"],
+      "Yauco": ["00698"],
+      "San German": ["00683"],
+      "Cabo Rojo": ["00623"],
+      "Dorado": ["00646"],
+      "Isabela": ["00662"],
+      "Juana Diaz": ["00795"],
+      "Hatillo": ["00659"],
+      "Camuy": ["00669"],
+      "Barceloneta": ["00617"],
+      "Adjuntas": ["00601"],
+      "Aguada": ["00602"],
+      "Anasco": ["00610"],
+      "Guanica": ["00653"],
+      "Guayanilla": ["00656"],
+      "Lajas": ["00667"],
+      "Luquillo": ["00773"],
+      "Naguabo": ["00718"],
+      "Patillas": ["00723"],
+      "Quebradillas": ["00678"],
+      "Arroyo": ["00714"],
+      "Salinas": ["00751"],
+      "Santa Isabel": ["00757"],
+      "Villalba": ["00766"],
+      "Culebra": ["00775"],
+      "Vieques": ["00765"],
+      "Jayuya": ["00664"],
+      "Maricao": ["00606"],
+      "Morovis": ["00687"],
+      "Orocovis": ["00720"],
+      "Toa Alta": ["00953"],
+      "Aguas Buenas": ["00703"]
+    },
+    "GU": {
+      "Hagatna": ["96910"],
+      "Mangilao": ["96913"],
+      "Santa Rita": ["96915"],
+      "Chalan Pago": ["96928"],
+      "Yigo": ["96929"]
+    },
+    "VI": {
+      "Charlotte Amalie": ["00802", "00805"],
+      "Christiansted": ["00820"],
+      "Frederiksted": ["00840"],
+      "Kingshill": ["00850", "00851"],
+      "Cruz Bay": ["00830"]
+    },
+    "AS": { "Pago Pago": ["96799"] },
+    "MP": { "Saipan": ["96950"], "Rota": ["96951"], "Tinian": ["96952"] }
+  };
+
+  /* ---------- 工具 ---------- */
+  function isAllCaps(name) {
+    const letters = [];
+    for (const ch of name) if (/\p{L}/u.test(ch)) letters.push(ch);
+    return name.length >= 3 && letters.length > 0 && letters.every(ch => ch === ch.toUpperCase());
+  }
+  function isCorporate(name) {
+    if (name.trim().split(/\s+/).length > 4) return true;
+    const low = name.toLowerCase();
+    return GARBAGE.some(g => low.includes(g.toLowerCase()));
+  }
+  function spreadIdx(n, k) {
+    if (n <= k) return Array.from({ length: n }, (_, i) => i);
+    const s = new Set();
+    for (let i = 0; i < k; i++) s.add(Math.round(i * (n - 1) / (k - 1)));
+    return [...s].sort((a, b) => a - b);
+  }
+  const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const r4 = x => Math.round(x * 10000) / 10000;
+  const avg = arr => arr.reduce((s, x) => s + x, 0) / arr.length;
+  function buildTime() {
+    const d = new Date(), p = x => String(x).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  /* ---------- 最小 zip 读取器（中央目录解析 + DecompressionStream 原生解压） ---------- */
+  async function readZipEntry(buf, wantedStem) {
+    if (typeof DecompressionStream === "undefined") throw new Error("浏览器过旧，缺少 DecompressionStream，请换用新版 Chrome / Edge / Firefox / Safari");
+    const dv = new DataView(buf);
+    const len = buf.byteLength;
+    let eocd = -1;
+    for (let i = len - 22; i >= Math.max(0, len - 65558); i--) {
+      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error("无效的 zip 文件（未找到 EOCD）");
+    const count = dv.getUint16(eocd + 10, true);
+    let off = dv.getUint32(eocd + 16, true);
+    let best = null;
+    const td = new TextDecoder();
+    for (let n = 0; n < count; n++) {
+      if (dv.getUint32(off, true) !== 0x02014b50) break;
+      const method = dv.getUint16(off + 10, true);
+      const csize = dv.getUint32(off + 20, true);
+      const nameLen = dv.getUint16(off + 28, true);
+      const extraLen = dv.getUint16(off + 30, true);
+      const cmtLen = dv.getUint16(off + 32, true);
+      const lho = dv.getUint32(off + 42, true);
+      const name = td.decode(new Uint8Array(buf, off + 46, nameLen));
+      if (/\.txt$/i.test(name)) {
+        const stem = name.replace(/\.[^.]*$/, "").toUpperCase();
+        if (stem === wantedStem.toUpperCase()) { best = { method, csize, lho }; break; }
+        if (!best) best = { method, csize, lho }; // 兜底：唯一/最大的 .txt
+      }
+      off += 46 + nameLen + extraLen + cmtLen;
+    }
+    if (!best) throw new Error("zip 内未找到数据文件 " + wantedStem);
+    const lnLen = dv.getUint16(best.lho + 26, true);
+    const lxLen = dv.getUint16(best.lho + 28, true);
+    const start = best.lho + 30 + lnLen + lxLen;
+    const comp = new Uint8Array(buf, start, best.csize);
+    if (best.method === 0) return comp; // stored（未压缩）
+    if (best.method !== 8) throw new Error("不支持的压缩方式 " + best.method);
+    const stream = new Blob([comp]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  /* ---------- 解析（对应 build_data.py 的 parse） ---------- */
+  function parseText(cc, text) {
+    const regions = new Map(); // rkey -> { name, cities: Map(city -> {zips:Set, lat:[], lng:[]}) }
+    for (let raw of text.split("\n")) {
+      const cols = raw.replace(/\r$/, "").split("\t");
+      if (cols.length < 11) continue;
+      const zip_ = cols[1], city = cols[2];
+      const rname = (cols[3] || "").trim(), rcode = (cols[4] || "").trim();
+      if (!zip_ || !city) continue;
+      if (cc === "US" && (US_EXCLUDED.has(rcode) || US_EXCLUDED.has(rname))) continue;
+      const lat = parseFloat(cols[9]), lng = parseFloat(cols[10]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+      const key = rcode || rname || cc;
+      if (cc === "GB" && (key === "GB" || WEIRD_REGION_KEY.test(key))) continue;
+      let reg = regions.get(key);
+      if (!reg) { reg = { name: rname || rcode || cc, cities: new Map() }; regions.set(key, reg); }
+      if (isAllCaps(city) || isCorporate(city)) continue; // 企业/邮政服务条目
+      let c = reg.cities.get(city);
+      if (!c) { c = { zips: new Set(), lat: [], lng: [] }; reg.cities.set(city, c); }
+      c.zips.add(zip_); c.lat.push(lat); c.lng.push(lng);
+    }
+    return regions;
+  }
+
+  /* ---------- ZCTA 坐标表 + 美国海外领地合并 ---------- */
+  function parseZcta(text) {
+    const zcta = new Map();
+    let first = true;
+    for (let raw of text.split("\n")) {
+      if (first) { first = false; continue; } // 表头
+      const cols = raw.trim().split(/\s+/);
+      if (cols.length >= 7 && /^\d{5}$/.test(cols[0])) {
+        const lat = parseFloat(cols[5]), lng = parseFloat(cols[6]);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) zcta.set(cols[0], [lat, lng]);
+      }
+    }
+    return zcta;
+  }
+  function mergeUSTerritories(regions, zcta) {
+    for (const [st, citymap] of Object.entries(TERRITORIES)) {
+      const cities = new Map();
+      for (const [city, zips] of Object.entries(citymap)) {
+        const valid = zips.filter(z => zcta.has(z));
+        if (!valid.length) continue;
+        const lat = avg(valid.map(z => zcta.get(z)[0]));
+        const lng = avg(valid.map(z => zcta.get(z)[1]));
+        let c = cities.get(city);
+        if (!c) { c = { zips: new Set(), lat: [], lng: [] }; cities.set(city, c); }
+        valid.forEach(z => c.zips.add(z));
+        c.lat.push(lat); c.lng.push(lng);
+      }
+      if (cities.size) regions.set(st, { name: null, cities });
+    }
+    return regions;
+  }
+
+  /* ---------- 构建（对应 build_data.py 的 build_country） ---------- */
+  function buildCountry(cc, regions) {
+    const ranked = [];
+    for (const [rkey, reg] of regions) {
+      for (const [cname, c] of reg.cities) {
+        ranked.push({ w: c.zips.size, r: rkey, n: cname,
+          z: [...c.zips].sort(), lat: avg(c.lat), lng: avg(c.lng) });
+      }
+    }
+    const byCount = (a, b) => b.w - a.w || cmpStr(a.n, b.n);
+    const cityEntry = e => ({
+      n: e.n,
+      z: e.z.length > ZIPS_PER_CITY ? spreadIdx(e.z.length, ZIPS_PER_CITY).map(i => e.z[i]) : e.z,
+      c: [r4(e.lat), r4(e.lng)],
+      w: e.w,
+    });
+    const picked = new Map();
+    const byRegion = new Map();
+    for (const e of ranked) {
+      if (!byRegion.has(e.r)) byRegion.set(e.r, []);
+      byRegion.get(e.r).push(e);
+    }
+    if (cc === "US") {
+      for (const [rkey, lst] of byRegion) {
+        const top = lst.slice().sort(byCount).slice(0, US_CITIES_PER_REGION);
+        picked.set(rkey, top.sort((a, b) => cmpStr(a.n, b.n)).map(cityEntry));
+      }
+    } else {
+      for (const [rkey, lst] of byRegion) {
+        const top = lst.slice().sort(byCount)[0];
+        picked.set(rkey, [cityEntry(top)]);
+      }
+      let quota = DEFAULT_QUOTA - [...picked.values()].reduce((s, l) => s + l.length, 0);
+      for (const e of ranked.slice().sort(byCount)) {
+        if (quota <= 0) break;
+        const pl = picked.get(e.r);
+        if (pl.length >= REGION_CAP) continue;
+        if (pl.some(p => p.n === e.n)) continue;
+        pl.push(cityEntry(e));
+        quota--;
+      }
+    }
+    const regionsOut = {};
+    for (const rkey of [...picked.keys()].sort()) {
+      const cities = picked.get(rkey).slice().sort((a, b) => cmpStr(a.n, b.n));
+      cities.forEach(c => delete c.w);
+      regionsOut[rkey] = { n: regions.get(rkey).name, cities };
+    }
+    const rankedAll = ranked.slice().sort(byCount);
+    const hotList = rankedAll.filter(e => !HOT_SUFFIX.test(e.n));
+    const hot = (hotList.length ? hotList : rankedAll).slice(0, 16)
+      .map(e => ({ n: e.n, r: e.r }));
+    return { regions: regionsOut, hot };
+  }
+
+  /* ---------- 单国/全部运行 ---------- */
+  async function fetchZipBytes(cc) {
+    const r = await fetch("/api/zip/" + cc);
+    if (!r.ok) throw new Error("代理请求失败 HTTP " + r.status);
+    return r.arrayBuffer();
+  }
+  async function fetchGazBytes() {
+    const r = await fetch("/api/gaz");
+    if (!r.ok) throw new Error("ZCTA 请求失败 HTTP " + r.status);
+    return r.arrayBuffer();
+  }
+  async function runOne(cc, zctaRef) {
+    const buf = await fetchZipBytes(cc);
+    const u8 = await readZipEntry(buf, cc);
+    const text = new TextDecoder().decode(u8);
+    const regions = parseText(cc, text);
+    if (cc === "US") {
+      if (!zctaRef.map) {
+        try {
+          const gz = await fetchGazBytes();
+          const gu8 = await readZipEntry(gz, "2023_Gaz_zcta_national");
+          zctaRef.map = parseZcta(new TextDecoder().decode(gu8));
+        } catch (e) {
+          zctaRef.map = new Map(); // 与 build_data.py 一致：无 ZCTA 时仅跳过领地
+          zctaRef.warn = String(e.message || e);
+        }
+      }
+      mergeUSTerritories(regions, zctaRef.map);
+    }
+    const built = buildCountry(cc, regions);
+    const nRegions = Object.keys(built.regions).length;
+    const nCities = Object.values(built.regions).reduce((s, r) => s + r.cities.length, 0);
+    return { built, nRegions, nCities };
+  }
+  async function runAll(onLine) {
+    const out = {};
+    const zctaRef = { map: null };
+    let skipped = 0;
+    for (const cc of COUNTRIES) {
+      try {
+        onLine(`下载 ${cc} …`);
+        const { built, nRegions, nCities } = await runOne(cc, zctaRef);
+        out[cc] = built;
+        onLine(`OK ${cc}: regions=${nRegions} cities=${nCities}`, "ok");
+      } catch (e) {
+        skipped++;
+        onLine(`SKIP ${cc}: ${e.message || e}`, "skip");
+      }
+    }
+    if (zctaRef.warn) onLine(`!! ZCTA 坐标表不可用（${zctaRef.warn}），美国海外领地将被跳过`, "skip");
+    const totalC = Object.values(out).reduce((s, c) =>
+      s + Object.values(c.regions).reduce((s2, r) => s2 + r.cities.length, 0), 0);
+    onLine("", "ok");
+    onLine(`countries=${Object.keys(out).length} total_cities=${totalC}`, "ok");
+    if (!Object.keys(out).length) throw new Error("没有任何国家构建成功");
+    const js = "/* Auto-generated by update.html (Cloudflare browser builder) - DO NOT EDIT.\n" +
+      "   Source: GeoNames postal datasets https://download.geonames.org/export/zip/ (CC BY 4.0). */\n" +
+      `window.ADDR_DATA_BUILD_TIME = "${buildTime()}";\n` +
+      "window.ADDR_COUNTRIES = " + JSON.stringify(out) + ";\n";
+    return { js, count: Object.keys(out).length, skipped };
+  }
+
+  return { runAll, runOne, buildTime };
+})();
+</script>
+
+<script>
+/* 页面交互 */
+(function () {
+  const $ = id => document.getElementById(id);
+  const log = $("log"), btn = $("btnStart"), stat = $("stat"), done = $("done");
+  let running = false;
+  function line(msg, cls) {
+    const el = document.createElement("span");
+    if (cls) el.className = cls;
+    el.textContent = msg + "\n";
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+  }
+  btn.addEventListener("click", async () => {
+    if (running) return;
+    running = true;
+    btn.disabled = true;
+    btn.textContent = "更新中…";
+    done.hidden = true;
+    log.textContent = "";
+    const t0 = Date.now();
+    try {
+      const res = await window.UpdateData.runAll(line);
+      const blob = new Blob([res.js], { type: "text/javascript" });
+      const url = URL.createObjectURL(blob);
+      $("dl").href = url;
+      $("outInfo").textContent = (blob.size / 1024).toFixed(0) + " KB，" +
+        res.count + " 国" + (res.skipped ? "，跳过 " + res.skipped + " 国" : "");
+      const sec = Math.round((Date.now() - t0) / 1000);
+      stat.textContent = `耗时 ${Math.floor(sec / 60)}分${sec % 60}秒`;
+      done.hidden = false;
+      line("✓ 构建完成，点击下方按钮下载 countries_data.js", "ok");
+    } catch (e) {
+      line("✗ 更新失败：" + (e.message || e), "err");
+      stat.textContent = "";
+    } finally {
+      running = false;
+      btn.disabled = false;
+      btn.textContent = "开始更新";
+    }
+  });
+})();
+</script>
+</body>
+</html>
