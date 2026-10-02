@@ -1,0 +1,8 @@
+# GeoNames 原始数据缓存（体积大，构建时自动下载）
+tools/*.txt
+tools/*.zip
+__pycache__/
+*.pyc
+server.log
+.DS_Store
+Thumbs.db
