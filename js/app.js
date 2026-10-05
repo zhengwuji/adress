@@ -240,6 +240,13 @@
     const pa = N.POPULAR_CC.indexOf(a), pb = N.POPULAR_CC.indexOf(b);
     return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb) || a.localeCompare(b);
   });
+  // 数据修正：美国海外领地（AS/GU/PR/VI/MP）的 region.n 为空，用州名表补齐，避免界面/账单表单出现 "null"
+  Object.keys(DATA).forEach((cc) => {
+    const R = DATA[cc].regions || {};
+    Object.keys(R).forEach((k) => {
+      if (!R[k].n) R[k].n = (cc === "US" && N.US_STATES[k] && N.US_STATES[k].name) ? N.US_STATES[k].name : k;
+    });
+  });
   const US_HOT_ORDER = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia",
     "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Seattle", "Denver", "Boston",
     "Washington", "Las Vegas"];
