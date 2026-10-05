@@ -35,7 +35,16 @@
       "hero.country": "国家/地区", "hero.randomCountry": "随机国家",
       "card.basic": "基本信息", "card.addr": "地址信息", "card.job": "就业信息",
       "card.credit": "信用卡信息", "card.map": "地图位置", "card.quick": "快速操作",
-      "card.filter": "筛选选项", "card.hot": "热门城市",
+      "card.filter": "筛选选项", "card.hot": "热门城市", "card.billing": "账单地址表单",
+      "billing.firstName": "First name", "billing.lastName": "Last name",
+      "billing.address": "Billing address", "billing.city": "City",
+      "billing.country": "Country/Region",
+      "billing.gst": "GSTIN (optional)",
+      "billing.fill": "一键填入", "billing.filled": "表单已按当前信息填入",
+      "billing.copyForm": "复制整张表单", "billing.copyBlock": "复制地址块",
+      "billing.hint": "点击任意字段可直接复制；字段顺序与 Google 账单地址表单一致，可逐格粘贴。",
+      "billing.tipZip": "邮编（Google 表单中按国家显示 ZIP / PIN / Postal code）",
+      "billing.tipGst": "GSTIN 为按格式随机生成的虚构税号，仅用于表单格式校验",
       "f.fullName": "全名：", "f.gender": "性别：", "f.dob": "生日：", "f.title": "称谓：",
       "f.hair": "头发颜色：", "f.country": "国家：", "f.street": "街道：", "f.city": "城市：",
       "f.zip": "邮编：", "f.phone": "电话：", "f.email": "邮箱：",
@@ -72,7 +81,16 @@
       "hero.country": "Country/Region", "hero.randomCountry": "Random country",
       "card.basic": "Basic Info", "card.addr": "Address Info", "card.job": "Employment",
       "card.credit": "Credit Card", "card.map": "Map Location", "card.quick": "Quick Actions",
-      "card.filter": "Filter Options", "card.hot": "Popular Cities",
+      "card.filter": "Filter Options", "card.hot": "Popular Cities", "card.billing": "Billing Address Form",
+      "billing.firstName": "First name", "billing.lastName": "Last name",
+      "billing.address": "Billing address", "billing.city": "City",
+      "billing.country": "Country/Region",
+      "billing.gst": "GSTIN (optional)",
+      "billing.fill": "Fill form", "billing.filled": "Form filled from current record",
+      "billing.copyForm": "Copy whole form", "billing.copyBlock": "Copy address block",
+      "billing.hint": "Click any field to copy it; the field order matches the Google billing address form, so you can paste field by field.",
+      "billing.tipZip": "Postal code (shown as ZIP / PIN / Postal code depending on country)",
+      "billing.tipGst": "GSTIN is a randomly generated fictional tax number, only for form-format testing",
       "f.fullName": "Full Name:", "f.gender": "Gender:", "f.dob": "Birthday:", "f.title": "Title:",
       "f.hair": "Hair Color:", "f.country": "Country:", "f.street": "Street:", "f.city": "City:",
       "f.zip": "ZIP:", "f.phone": "Phone:", "f.email": "Email:",
@@ -116,6 +134,37 @@
   }
   function ascii(s) {
     return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z]/g, "").toLowerCase();
+  }
+
+  /* ================= 账单地址表单辅助 ================= */
+  // 邮编字段在各国的叫法（与 Google 账单地址表单一致）
+  const ZIP_LABELS = {
+    US: "ZIP code", CA: "Postal code", GB: "Postcode", IE: "Eircode",
+    IN: "PIN code", JP: "Postal code", CN: "Postal code", KR: "Postal code",
+    BR: "CEP", MX: "Postal code", AR: "Postal code", CL: "Postal code",
+    DE: "Postal code", FR: "Postal code", IT: "Postal code", ES: "Postal code",
+    PT: "Postal code", NL: "Postal code", BE: "Postal code", AT: "Postal code",
+    CH: "Postal code", PL: "Postal code", SE: "Postal code", NO: "Postal code",
+    DK: "Postal code", RU: "Postal code", TR: "Postal code",
+    MY: "Postcode", ID: "Postal code", TH: "Postal code", PH: "Postal code",
+    AE: "Postal code", ZA: "Postal code", NZ: "Postcode", AU: "Postcode",
+    CO: "Postal code"
+  };
+  // 使用 GST / VAT 类税号的国家
+  const GST_COUNTRIES = ["IN", "AU", "NZ", "CA"];
+  const GST_LABELS = {
+    IN: ["GSTIN (optional)", "GSTIN（可选）"],
+    AU: ["ABN (optional)", "ABN（可选）"],
+    NZ: ["GST number (optional)", "GST 号（可选）"],
+    CA: ["GST/HST number (optional)", "GST/HST 号（可选）"]
+  };
+  function makeGst(cc) {
+    const L = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const ltr = () => L[rint(0, 25)];
+    if (cc === "IN") return digits(2) + ltr() + ltr() + ltr() + ltr() + ltr() + digits(4) + ltr() + digits(1) + ltr() + digits(1);
+    if (cc === "AU") return digits(2) + " " + digits(3) + " " + digits(3) + " " + digits(3);
+    if (cc === "NZ") return digits(3) + "-" + digits(3) + "-" + digits(3);
+    return digits(9) + "RT" + digits(4);
   }
 
   /* ================= OSM 真实街道 ================= */
@@ -288,10 +337,30 @@
     const street = makeStreet(cc, city.n, region.n, forceNumber);
     const stateShort = (rkey !== region.n && /^[A-Za-z]{1,3}$/.test(rkey)) ? rkey : region.n;
     const countryDisplay = lang === "zh" ? meta.zh : meta.name;
+    const isCn = /\u4e00-\u9fa5/.test(fullName);
+    const nameParts = fullName.split(/\s+/);
+    const firstName = loc.order === "lf" ? nameParts.slice(1).join(" ") : nameParts[0];
+    const lastName = loc.order === "lf" ? nameParts[0] : nameParts.slice(1).join(" ");
     const fullAddress = cc === "US"
       ? `${street}, ${city.n}, ${rkey} ${zip}, United States`
       : cc === "JP" ? `${street}, ${zip}, ${countryDisplay}`
       : `${street}, ${zip} ${city.n}, ${countryDisplay}`;
+    // 账单地址表单（Google 表单样式）与「复制地址块」用的合并文本
+    const billing = {
+      firstName: firstName || fullName,
+      lastName: lastName || fullName,
+      fullName,
+      street,
+      city: city.n,
+      region: region.n,
+      zip,
+      country: countryDisplay,
+      countryEn: meta.name,
+      countryCode: cc,
+      gst: GST_COUNTRIES.indexOf(cc) >= 0 ? makeGst(cc) : ""
+    };
+    const addrBlock = cc === "US" ? `${fullName}\n${street}\n${city.n}, ${stateShort} ${zip}\nUnited States`
+      : `${fullName}\n${street}\n${city.n} ${zip}\n${region.n}\n${countryDisplay}`;
 
     // 信用卡（随机虚构、通过 Luhn 校验，仅供表单测试；luhnComplete 追加校验位）
     const brand = rand(N.CARD_BRANDS);
@@ -319,7 +388,9 @@
       company: rand(N.COMPANY_A) + " " + rand(N.COMPANY_B),
       cardType: brand, cardNumber: numFmt, cardExpiry: expiry,
       cardCvv: brand === "American Express" ? String(rint(1000, 9999)) : String(rint(100, 999)),
-      fullAddress,
+      fullAddress, addrBlock, billing,
+      nameAscii: { first: isCn ? "" : ascii(firstName), last: isCn ? "" : ascii(lastName) },
+      isCn,
       location: { lat: city.c[0], lng: city.c[1] },
       generatedAt: new Date().toISOString()
     };
@@ -342,6 +413,60 @@
     const key = currentCountry + "|" + current.city;
     $("streetSrc").textContent = META[currentCountry].num === "jp" ? t("src.jp")
       : osmCache[key] ? t("src.osm").replace("{n}", osmCache[key].length) : t("src.pool");
+    renderBilling();
+  }
+
+  /* ================= 账单地址表单（逐字段复制） ================= */
+  const BF_FIELDS = ["firstName", "lastName", "street", "city", "state", "zip", "country", "gst"];
+
+  function billingValue(k) {
+    const b = current.billing;
+    // 账单表单模拟英文站点表单：地区用完整名称、国家/地区固定英文名，便于直接粘贴
+    if (k === "state") return b.region;
+    if (k === "country") return b.countryEn;
+    return b[k] || "";
+  }
+
+  function billingFormText() {
+    const L = lang === "zh"
+      ? { firstName: "First name", lastName: "Last name", street: "Billing address", city: "City",
+          state: "State/Province", zip: zipLabelText(), country: "Country/Region", gst: gstLabelText() }
+      : { firstName: "First name", lastName: "Last name", street: "Billing address", city: "City",
+          state: "State/Province", zip: zipLabelText(), country: "Country/Region", gst: gstLabelText() };
+    return ["firstName", "lastName", "street", "city", "state", "zip", "country"]
+      .concat(current.billing.gst ? ["gst"] : [])
+      .map((k) => `${L[k]}: ${billingValue(k)}`).join("\n");
+  }
+
+  function zipLabelText() {
+    const cc = currentCountry;
+    if (cc === "IN") return "PIN code";
+    return ZIP_LABELS[cc] || (lang === "zh" ? "邮编" : "Postal code");
+  }
+  function fieldLabel(k) {
+    const map = lang === "zh"
+      ? { firstName: "名", lastName: "姓", street: "账单地址", city: "城市", state: "州/省", zip: "邮编", country: "国家/地区", gst: "税号" }
+      : { firstName: "First name", lastName: "Last name", street: "Billing address", city: "City", state: "State/Province", zip: "Postal code", country: "Country/Region", gst: "Tax ID" };
+    return map[k] || k;
+  }
+  function gstLabelText() {
+    const pair = GST_LABELS[currentCountry];
+    return pair ? pair[lang === "zh" ? 1 : 0] : t("billing.gst");
+  }
+
+  function renderBilling() {
+    BF_FIELDS.forEach((k) => {
+      const el = $("bf-" + k);
+      if (el) el.value = k === "gst" ? (current.billing.gst || "") : billingValue(k);
+    });
+    const zipField = $("bfZipField");
+    if (zipField) { $("bf-lblZip").textContent = zipLabelText(); zipField.title = t("billing.tipZip"); }
+    const gstField = $("bfGstField");
+    if (gstField) {
+      const has = !!(current.billing && current.billing.gst);
+      gstField.hidden = !has;
+      if (has) $("bf-lblGst").textContent = gstLabelText();
+    }
   }
 
   function updateCountryUI() {
@@ -589,6 +714,15 @@
     try {
       const ping = await fetch("/api/ping");
       if (!ping.ok) throw new Error("no updater");
+      const p = await ping.json().catch(() => ({}));
+      if (p.cf) {
+        // Cloudflare Pages 部署：跳转到浏览器内数据更新页
+        hint.innerHTML = lang === "zh"
+          ? "检测到 Cloudflare 部署，正在打开在线数据更新页…"
+          : "Cloudflare deployment detected, opening the online updater…";
+        setTimeout(() => { location.href = "/update.html"; }, 600);
+        return;
+      }
     } catch (e) {
       hint.innerHTML = lang === "zh"
         ? "当前 HTTP 服务不带更新接口。请改用 <code>python server.py</code> 启动本站，或在命令行运行 <code>python tools/update_data.py</code> 后刷新页面。"
@@ -752,6 +886,10 @@ USAddressGen.setLang('en')                 // switch language</pre>
     get last() { return current; },
     setLang(l) { lang = l === "en" ? "en" : "zh"; localStorage.setItem("addr_lang", lang); applyI18n(); },
     get lang() { return lang; },
+    billingValue,
+    billingFormText,
+    get billing() { return current ? current.billing : null; },
+    get addrBlock() { return current ? current.addrBlock : ""; },
     countries: CC_LIST.length,
     stats(cc) { return countryStats(cc || currentCountry); }
   };
@@ -776,6 +914,42 @@ USAddressGen.setLang('en')                 // switch language</pre>
     $("chkHouse").addEventListener("change", persistFilters);
     $("chkOsm").addEventListener("change", persistFilters);
     $("selCountry").addEventListener("change", (e) => setCountry(e.target.value));
+    $("heroBlock").addEventListener("click", async (e) => {
+      if (!current) return;
+      const ok = await copyText(current.addrBlock || current.fullAddress);
+      toast(ok ? t("toast.copied") : t("toast.copyFail"));
+      if (ok) flash(e.currentTarget);
+    });
+
+    // ===== 账单地址表单：点任一字段即复制该字段 =====
+    document.querySelectorAll("#billingForm [data-copy-field]").forEach((f) => {
+      const field = f.getAttribute("data-copy-field");
+      f.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (!current) return;
+        const val = field === "gst" ? (current.billing.gst || "") : billingValue(field);
+        if (!val) return;
+        const ok = await copyText(val);
+        if (ok) { toast(t("toast.copied") + " · " + fieldLabel(field) + "：" + val); flash(f); }
+        else toast(t("toast.copyFail"));
+      });
+      f.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); f.click(); }
+      });
+    });
+    $("btnFillForm").addEventListener("click", () => { if (current) renderBilling(); toast(t("billing.filled")); });
+    $("btnCopyForm").addEventListener("click", async (e) => {
+      if (!current) return;
+      const ok = await copyText(billingFormText());
+      toast(ok ? t("toast.copied") : t("toast.copyFail"));
+      if (ok) flash(e.currentTarget);
+    });
+    $("btnCopyAddrBlock").addEventListener("click", async (e) => {
+      if (!current) return;
+      const ok = await copyText(current.addrBlock || current.fullAddress);
+      toast(ok ? t("toast.copied") : t("toast.copyFail"));
+      if (ok) flash(e.currentTarget);
+    });
 
     document.querySelectorAll(".cp").forEach((b) => {
       b.addEventListener("click", async () => {
@@ -821,17 +995,34 @@ USAddressGen.setLang('en')                 // switch language</pre>
     initFlagChips();
     initRegionSelects();
     restoreFilters();
-    if (p.get("state")) $("selState").value = p.get("state").toUpperCase();
-    $("selState")._fillCities();
-    if (p.get("city")) $("selCity").value = p.get("city");
-    if (p.get("house") === "0") $("chkHouse").checked = false;
-    if (p.get("house") === "1") $("chkHouse").checked = true;
-
     applyI18n();
     bind();
 
+    // URL 参数优先于本地记忆的筛选（state/city/house/free 任一存在即按其生成）
+    const hasUrlFilter = p.has("state") || p.has("city") || p.has("house") || p.has("free");
+    if (hasUrlFilter) {
+      // state 支持两种写法：内部 key（US 州缩写 "TX" / 其他国家行政码）或地区英文全名（"Delhi"）
+      const rawState = (p.get("state") || "").trim();
+      const regions = DATA[currentCountry].regions;
+      let stateVal = "";
+      if (rawState) {
+        if (regions[rawState.toUpperCase()]) stateVal = rawState.toUpperCase();
+        else {
+          const hit = Object.keys(regions).find((k) => regions[k].n.toLowerCase() === rawState.toLowerCase());
+          if (hit) stateVal = hit;
+        }
+      }
+      $("selState").value = stateVal;
+      $("selState")._fillCities();
+      $("selCity").value = p.get("city") || "";
+      if (p.get("house") === "0") $("chkHouse").checked = false;
+      if (p.get("house") === "1") $("chkHouse").checked = true;
+    }
+
     const opts = {};
     if (p.get("free") === "1") opts.taxFree = true;
+    if (hasUrlFilter && $("selState").value) opts.state = $("selState").value;
+    if (hasUrlFilter && p.get("city") && $("selCity").value) opts.city = $("selCity").value;
     generate(opts);
   }
 

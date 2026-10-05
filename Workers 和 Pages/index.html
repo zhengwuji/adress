@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>美国地址生成器 - 随机生成真实格式的美国地址</title>
-<meta name="description" content="免费在线美国地址生成器，随机生成包含街道、城市、州、邮编的真实格式美国地址，支持按州/城市筛选、Google Maps 地图显示、一键复制与 JSON 导出。仅供开发测试使用。">
+<meta name="description" content="免费在线美国地址生成器，随机生成包含街道、城市、州、邮编的真实格式美国地址，支持按州/城市筛选、账单地址表单样式逐字段复制、Google Maps 地图显示与 JSON 导出。仅供开发测试使用。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cpath d='M16 6a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 16 10a2.5 2.5 0 0 1 0 5.5z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261003b">
+<link rel="stylesheet" href="css/style.css?v=20261005d">
 </head>
 <body>
 
@@ -32,6 +32,8 @@
     <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
     <symbol id="i-city" viewBox="0 0 24 24"><path d="M15 9V5.83a1 1 0 0 0-.47-.85l-3-1.9a1 1 0 0 0-1.53.85V9H2v13h20V9h-7zm-8 9H5v-2h2v2zm0-4H5v-2h2v2zm5 4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm5 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2z"/></symbol>
+    <symbol id="i-form" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v3h6V5H5zm8 0v3h6V5h-6zM5 10v3h6v-3H5zm8 0v3h6v-3h-6zM5 15v3h6v-3H5zm8 0v3h6v-3h-6z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 4.2a1.3 1.3 0 1 1-1.3 1.3A1.3 1.3 0 0 1 12 6.2zm1.6 11.6h-3.2v-1.4h.9v-3.5h-.9v-1.4h2.3v4.9h.9z"/></symbol>
   </defs>
 </svg>
 
@@ -87,6 +89,7 @@
           <svg class="ok" id="heroOk"><use href="#i-check-circle"/></svg>
         </div>
         <button class="hero-addr" id="heroAddr" title="点击复制完整地址">--</button>
+        <button class="hero-block" id="heroBlock" type="button"><svg><use href="#i-form"/></svg><span data-i18n="billing.copyBlock">复制地址块</span></button>
         <div class="hero-stats">
           <div class="stat"><strong id="statStates">56</strong><span id="lblStatRegions">可用州</span></div>
           <div class="stat"><strong id="statCities">--</strong><span data-i18n="hero.cities">可用城市</span></div>
@@ -142,6 +145,56 @@
 
     <!-- 中列 -->
     <div class="col">
+      <section class="card" id="cardBilling">
+        <h2>
+          <span class="cicon blue"><svg><use href="#i-form"/></svg></span>
+          <span data-i18n="card.billing">账单地址表单</span>
+          <button class="hlink asbtn" id="btnFillForm" data-i18n="billing.fill">一键填入</button>
+        </h2>
+        <div class="billing-form" id="billingForm">
+          <div class="bf-grid">
+            <label class="bf-field" data-copy-field="firstName">
+              <span class="bf-label" data-i18n="billing.firstName">First name</span>
+              <input type="text" id="bf-firstName" readonly tabindex="-1">
+            </label>
+            <label class="bf-field" data-copy-field="lastName">
+              <span class="bf-label" data-i18n="billing.lastName">Last name</span>
+              <input type="text" id="bf-lastName" readonly tabindex="-1">
+            </label>
+            <label class="bf-field full" data-copy-field="street">
+              <span class="bf-label" data-i18n="billing.address">Billing address</span>
+              <input type="text" id="bf-street" readonly tabindex="-1">
+            </label>
+            <label class="bf-field" data-copy-field="city">
+              <span class="bf-label" data-i18n="billing.city">City</span>
+              <input type="text" id="bf-city" readonly tabindex="-1">
+            </label>
+            <label class="bf-field" data-copy-field="state">
+              <span class="bf-label" id="bf-lblRegion">State/Province</span>
+              <input type="text" id="bf-state" readonly tabindex="-1">
+            </label>
+            <label class="bf-field" id="bfZipField" data-copy-field="zip">
+              <span class="bf-label" id="bf-lblZip">ZIP code</span>
+              <input type="text" id="bf-zip" readonly tabindex="-1">
+            </label>
+            <label class="bf-field" data-copy-field="country">
+              <span class="bf-label" data-i18n="billing.country">Country/Region</span>
+              <input type="text" id="bf-country" readonly tabindex="-1">
+            </label>
+            <label class="bf-field full" id="bfGstField" data-copy-field="gst" hidden>
+              <span class="bf-label" id="bf-lblGst" data-i18n="billing.gst">GSTIN (optional)</span>
+              <input type="text" id="bf-gst" readonly tabindex="-1">
+              <span class="bf-info" title="GST / GSTIN"><svg><use href="#i-info"/></svg></span>
+            </label>
+          </div>
+          <div class="bf-actions">
+            <button class="btn soft" id="btnCopyForm"><svg><use href="#i-copy"/></svg><span data-i18n="billing.copyForm">复制整张表单</span></button>
+            <button class="btn ghost" id="btnCopyAddrBlock"><svg><use href="#i-pin"/></svg><span data-i18n="billing.copyBlock">复制地址块</span></button>
+          </div>
+          <p class="bf-hint" data-i18n="billing.hint">点击任意字段可直接复制；顺序与 Google 账单地址表单一致，可逐格粘贴。</p>
+        </div>
+      </section>
+
       <section class="card" id="cardAddr">
         <h2><span class="cicon blue"><svg><use href="#i-pin"/></svg></span><span data-i18n="card.addr">地址信息</span></h2>
         <div class="rows">
@@ -238,6 +291,6 @@
 
 <script src="js/countries_data.js?v=20261003"></script>
 <script src="js/names.js?v=20261003"></script>
-<script src="js/app.js?v=20261003"></script>
+<script src="js/app.js?v=20261005d"></script>
 </body>
 </html>

@@ -12,6 +12,7 @@
 - **OpenStreetMap 真实街道**：可选开启，联网查询所选城市的真实街道名（Nominatim 定位 + Overpass API 取路名，多镜像自动回退），缓存于浏览器本地，失败自动回退内置街道库
 - **Google Maps 地图显示**：免密钥嵌入地图定位生成的地址
 - **筛选选项**：按地区/城市筛选（标签随国家自动变化：州/省/邦/大区/都道府県…）；「仅生成包含门牌号的地址」开关
+- **账单地址表单（可直接复制）**：中列新增一张与 Google 账单地址表单同构的卡片——First name / Last name / Billing address / City / State·Province / 邮编（美国 ZIP code、英国 Postcode、印度 PIN code…）/ Country·Region，印度等国家额外显示 GSTIN（可选）；**点击任意字段即复制该字段的值**，另有「复制整张表单」与「复制地址块」（姓名+街道+城市州邮编的多行地址块，Hero 卡片也有一键入口）
 - **快速操作**：复制全部信息 / 随机生成 / 随机免税地址（美国 AK、DE、MT、NH、OR）/ 导出 JSON
 - **热门城市**：按当前国家自动切换（纽约、伦敦、柏林、东京银座…），支持折叠
 - **中英双语**：右上角「语言」切换，自动记忆
@@ -59,7 +60,7 @@ python tools/update_data.py    # 等价于 python tools/build_data.py --force
 | 参数 | 说明 | 示例 |
 |------|------|------|
 | `country` | 国家代码（36 国） | `?country=DE` |
-| `state` | 地区（美国用州缩写，其他国家用地区名） | `?country=DE&state=Bayern` |
+| `state` | 地区（美国用州缩写，其他国家支持行政码或地区英文全名） | `?country=DE&state=Bayern`、`?country=IN&state=Delhi` |
 | `city` | 城市名 | `?country=JP&city=Ginza` |
 | `house` | 1=强制门牌号，0=允许无门牌号 | `?house=1` |
 | `free` | 1=美国免税州 | `?free=1` |
@@ -76,6 +77,9 @@ USAddressGen.setCountry('DE')              // 切换国家
 USAddressGen.country                       // 当前国家代码
 USAddressGen.stats('JP')                   // {regions, cities}
 USAddressGen.last                          // 最近一次生成的记录
+USAddressGen.billing                       // 账单表单字段对象（firstName/lastName/street/city/region/zip/country/gst）
+USAddressGen.addrBlock                     // 可直接粘贴的多行地址块
+USAddressGen.billingFormText()             // 「复制整张表单」的多行文本
 USAddressGen.setLang('en')                 // 切换语言
 ```
 
@@ -104,6 +108,14 @@ python tools/build_data.py --force    # 强制重新下载全部国家
 ```
 
 ## 更新内容
+
+### v1.1.1（2026-10-05）— 账单地址表单
+
+- **新增「账单地址表单」卡片**：字段顺序与 Google Payments 账单地址表单一致（First name / Last name / Billing address / City / State·Province / 邮编 / Country·Region / GSTIN 可选），逐字段点击即复制，可直接粘贴到站长后台或支付页表单
+- **国家化字段标签**：邮编按国家显示 ZIP code / Postcode / PIN code / CEP 等；印度、澳大利亚、新西兰、加拿大额外显示 GSTIN / ABN / GST / HST（可选）字段，税号按各国格式随机生成且标注为虚构
+- **地址块一键复制**：「复制地址块」输出「姓名 + 街道 + 城市/州/邮编 + 国家」多行文本，Hero 卡片顶部同步提供入口
+- **URL 参数增强**：`?country=IN&state=Delhi` 现在同时支持内部行政码（`state=07`）与地区英文全名（`state=Delhi`），URL 参数优先于本地记忆的筛选
+- 复制地址信息卡片中的街道/城市/地区/邮编后，账单表单同步展示所复制的那条地址（不再与「地址信息」卡片错位）
 
 ### v1.1.0（2026-10-02）— 全球化升级
 

@@ -1,18 +1,21 @@
 # 地址生成器 · Cloudflare Workers / Pages 版
 
-与主项目完全相同的**多国地址生成器**（36 国真实城市数据、本地化生成、OSM 真实街道、Google 地图、中英双语），改造为可直接部署到 **Cloudflare Pages + Pages Functions** 的版本。
+与主项目完全相同的**多国地址生成器**（36 国真实城市数据、本地化生成、OSM 真实街道、Google 地图、中英双语、**账单地址表单逐字段复制**），改造为可直接部署到 **Cloudflare Pages + Pages Functions** 的版本。
+
+- 线上地址：<https://adress-1kx.pages.dev/>（Pages 项目名 `adress`）
+- 部署命令：`npx wrangler pages deploy . --project-name=adress --branch=main`
 
 **零存储依赖**：不使用 KV / R2 / D1 / Durable Objects——生成逻辑 100% 在浏览器本地运行；Functions 只做两个数据代理（转发 GeoNames 与人口普查文件，边缘缓存后透传），完全在免费额度内。
 
 ## 目录内容
 
 ```
-index.html               页面结构
+index.html               页面结构（含「账单地址表单」卡片）
 update.html              数据更新页（浏览器内重建 countries_data.js）
 css/style.css            样式
 js/countries_data.js     36 国真实城市/邮编/坐标（构建产物，含数据版本戳）
 js/names.js              各国元数据 + 24 语种人名池
-js/app.js                生成逻辑、国家切换、OSM 真实街道、地图、i18n
+js/app.js                生成逻辑、国家切换、OSM 真实街道、地图、i18n、账单表单
 functions/api/ping.js    GET  /api/ping      探测更新服务（返回 cf:true）
 functions/api/zip/[cc].js GET /api/zip/{CC}  GeoNames 邮编 zip 代理（36 国白名单 + 边缘缓存）
 functions/api/gaz.js     GET  /api/gaz       美国人口普查 ZCTA 坐标表代理（领地坐标用）
@@ -66,9 +69,15 @@ npx wrangler pages dev . --port 8788
 | 项目 | 主项目（本地版） | 本目录（Cloudflare 版） |
 |------|------------------|--------------------------|
 | 生成功能 | 相同（纯前端） | 相同（纯前端） |
+| 账单地址表单 | 相同 | 相同 |
 | 运行方式 | `python server.py` / 双击 index.html | Cloudflare Pages 托管 |
 | 数据更新 | 页面内一键重建（server.py 接口）或命令行 | `/update.html` 浏览器内重建 + 重新部署 |
 | 存储 | 本地文件 | 无（不用 KV/R2，仅 Functions 代理 + 边缘缓存） |
+
+## 更新记录
+
+- **v1.1.1（2026-10-05）**：同步主项目「账单地址表单」卡片（Google 表单同构字段、逐字段点击复制、复制整张表单/地址块、国家化邮编与 GSTIN 标签）；URL 参数 `?country=IN&state=Delhi` 支持地区英文全名。已部署至 <https://adress-1kx.pages.dev/>。
+- **v1.1.0（2026-10-02）**：首个 Cloudflare 版（全球化 36 国 + 浏览器内数据更新）。
 
 ## 免责声明
 
