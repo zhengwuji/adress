@@ -377,3 +377,144 @@ svg { fill: currentColor; }
   .nav-links > a { display: none; }
   .brand-name { font-size: 15px; }
 }
+
+/* ============ 顶部导航扩展 ============ */
+.nav-btn-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 0; background: none; font-size: 14px; color: var(--ink-2);
+  padding: 6px 8px; border-radius: 8px; transition: all .15s ease;
+}
+.nav-btn-link:hover { color: var(--blue-600); background: var(--blue-50); }
+.nav-ic { width: 15px; height: 15px; flex: none; }
+.nav-badge {
+  background: var(--blue-600); color: #fff; font-size: 11px; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px; line-height: 1.2;
+}
+
+/* ============ IP 区域预选条 ============ */
+.ip-panel {
+  max-width: 1200px; margin: 24px auto 0; padding: 16px 22px;
+  background: #fff; border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.ip-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ip-tag {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: var(--blue-50); color: var(--blue-600);
+  display: grid; place-items: center; flex: none;
+}
+.ip-tag svg { width: 17px; height: 17px; }
+.ip-desc { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 240px; }
+.ip-desc strong { font-size: 15px; color: var(--ink); }
+.ip-desc .ip-sub { font-size: 12.5px; color: var(--muted); }
+.ip-status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+  padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500;
+}
+.ip-status-badge.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.ip-status-badge.warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.ip-body { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ip-field { display: flex; gap: 8px; flex: 1; min-width: 280px; }
+.ip-field input {
+  flex: 1; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: #fbfcfe; color: var(--ink); font-size: 13.5px; outline: none;
+  font-family: inherit;
+}
+.ip-field input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59, 130, 246, .15); }
+.ip-auto-btn { white-space: nowrap; }
+
+/* ============ 分段控制 (Segmented Tabs) ============ */
+.card-head-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.card-head-bar h2 { margin: 0; }
+.seg-tabs {
+  display: inline-flex; background: #f1f5f9; border-radius: 8px; padding: 2px;
+  gap: 2px; border: 1px solid var(--line);
+}
+.seg-tab {
+  border: 0; background: none; font-size: 12px; padding: 4px 10px;
+  border-radius: 6px; color: var(--muted); font-weight: 500; transition: all .15s ease;
+}
+.seg-tab:hover { color: var(--ink); }
+.seg-tab.active { background: #fff; color: var(--blue-600); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* ============ 大洲标签 ============ */
+.continent-tabs {
+  display: flex; gap: 5px; overflow-x: auto; padding: 6px 0 8px;
+  scrollbar-width: none;
+}
+.continent-tabs::-webkit-scrollbar { display: none; }
+.continent-chip {
+  flex: none; border: 1px solid var(--line); background: #fbfcfe;
+  color: var(--ink-2); font-size: 11.5px; padding: 4px 8px; border-radius: 7px;
+  transition: all .12s ease;
+}
+.continent-chip:hover { border-color: var(--blue-500); color: var(--blue-600); }
+.continent-chip.active { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
+
+/* ============ 收藏星标 ============ */
+.hero-fav-btn {
+  background: none; border: 0; padding: 4px; color: #cbd5e1; border-radius: 6px;
+  display: grid; place-items: center; transition: color .15s, transform .15s; margin-left: auto;
+}
+.hero-fav-btn svg { width: 18px; height: 18px; }
+.hero-fav-btn:hover { color: #f59e0b; transform: scale(1.15); }
+.hero-fav-btn.active { color: #f59e0b; }
+.hero-fav-btn.active svg { fill: #f59e0b; }
+
+/* ============ 可搜索 Combobox ============ */
+.combobox-wrap { position: relative; margin-bottom: 10px; }
+.combo-input-box {
+  display: flex; align-items: center; position: relative;
+  border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe;
+}
+.combo-input-box:focus-within { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59, 130, 246, .15); }
+.combo-input {
+  width: 100%; border: 0; background: none; padding: 10px 34px 10px 12px;
+  font-size: 13.5px; color: var(--ink); outline: none; font-family: inherit;
+}
+.combo-arrow {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  border: 0; background: none; color: var(--muted); padding: 4px; display: grid; place-items: center;
+}
+.combo-arrow svg { width: 14px; height: 14px; }
+.combo-dropdown {
+  position: absolute; left: 0; top: calc(100% + 4px); right: 0;
+  max-height: 220px; overflow-y: auto; background: #fff;
+  border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, .15); z-index: 40; padding: 4px;
+}
+.combo-dropdown[hidden] { display: none; }
+.combo-opt {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; font-size: 13px; color: var(--ink-2); border-radius: 6px;
+  cursor: pointer;
+}
+.combo-opt:hover, .combo-opt.focused { background: var(--blue-50); color: var(--blue-700); }
+.combo-opt.selected { font-weight: 600; color: var(--blue-600); background: #eff6ff; }
+.combo-opt .opt-count { font-size: 11px; color: var(--muted); }
+.combo-empty { padding: 12px 10px; font-size: 12.5px; color: var(--muted); text-align: center; }
+
+/* 辅助样式 */
+.mono { font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 12.5px; }
+.ua-val { font-size: 11px; line-height: 1.4; word-break: break-all; }
+.flex-1 { flex: 1; }
+.quick-row { display: flex; gap: 8px; width: 100%; }
+.map-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; flex-wrap: wrap; gap: 8px; }
+.map-links { display: flex; gap: 12px; }
+.map-links .hlink { font-size: 12.5px; }
+
+/* 收藏夹与批量生成表格 */
+.fav-table-wrap, .batch-table-wrap { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; margin: 12px 0; }
+.fav-table, .batch-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.fav-table th, .batch-table th { background: #f8fafc; padding: 9px 12px; text-align: left; font-weight: 600; color: var(--ink-2); position: sticky; top: 0; border-bottom: 1px solid var(--line); }
+.fav-table td, .batch-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+.fav-table tr:hover, .batch-table tr:hover { background: #f8fafc; }
+.act-btn-group { display: flex; gap: 6px; }
+.mini-action { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 3px 7px; font-size: 11.5px; color: var(--ink-2); }
+.mini-action:hover { border-color: var(--blue-500); color: var(--blue-600); background: var(--blue-50); }
+.mini-action.danger:hover { border-color: #ef4444; color: #dc2626; background: #fef2f2; }

@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>美国地址生成器 - 随机生成真实格式的美国地址</title>
-<meta name="description" content="免费在线美国地址生成器，随机生成包含街道、城市、州、邮编的真实格式美国地址，支持按州/城市筛选、账单地址表单样式逐字段复制、Google Maps 地图显示与 JSON 导出。仅供开发测试使用。">
+<title>美国与全球真实地址生成器 - 多国身份、住宅地址、账单表单与数字指纹</title>
+<meta name="description" content="全功能真实多国地址与身份信息生成器：支持全球36国真实城市/邮编/住宅地址、IP区域归属地精准生成、Google账单地址表单逐格复制、虚拟网络数字指纹、高德/谷歌双地图与中英拼音对照。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cpath d='M16 6a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 16 10a2.5 2.5 0 0 1 0 5.5z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261005d">
+<link rel="stylesheet" href="css/style.css?v=20261107a">
 </head>
 <body>
 
@@ -34,6 +34,13 @@
     <symbol id="i-city" viewBox="0 0 24 24"><path d="M15 9V5.83a1 1 0 0 0-.47-.85l-3-1.9a1 1 0 0 0-1.53.85V9H2v13h20V9h-7zm-8 9H5v-2h2v2zm0-4H5v-2h2v2zm5 4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm5 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2z"/></symbol>
     <symbol id="i-form" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v3h6V5H5zm8 0v3h6V5h-6zM5 10v3h6v-3H5zm8 0v3h6v-3h-6zM5 15v3h6v-3H5zm8 0v3h6v-3h-6z"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 4.2a1.3 1.3 0 1 1-1.3 1.3A1.3 1.3 0 0 1 12 6.2zm1.6 11.6h-3.2v-1.4h.9v-3.5h-.9v-1.4h2.3v4.9h.9z"/></symbol>
+    <!-- 新增实用图标 -->
+    <symbol id="i-crosshair" viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v1.05A8.002 8.002 0 0 1 19.95 11H21a1 1 0 1 1 0 2h-1.05A8.002 8.002 0 0 1 13 19.95V21a1 1 0 1 1-2 0v-1.05A8.002 8.002 0 0 1 4.05 13H3a1 1 0 1 1 0-2h1.05A8.002 8.002 0 0 1 11 4.05V3a1 1 0 0 1 1-1zm0 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></symbol>
+    <symbol id="i-radar" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-13a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm0-10v3l2.5 2.5 1.4-1.4L13.5 8.7V7z"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V8h16v10zm-12-3h6v2H8v-2zm-2.7-2.7L7.6 10l-2.3-1.3-.9 1.7 1.3.7-1.3.7.9 1.7z"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><path d="M7 14A5 5 0 1 1 12 9c0 .4-.05.79-.14 1.16L18 16.32V19h-2.68v-1.68H13.6V15.6l-1.84-1.84c-.8.78-1.87 1.24-3.76 1.24zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
   </defs>
 </svg>
 
@@ -42,10 +49,20 @@
   <div class="nav-inner">
     <a class="brand" href="#top">
       <span class="brand-logo"><svg><use href="#i-pin"/></svg></span>
-      <span class="brand-name" data-i18n="brand">美国地址生成器</span>
+      <span class="brand-name" data-i18n="brand">真实地址生成器</span>
     </a>
     <nav class="nav-links">
       <a href="#top" data-i18n="nav.home">首页</a>
+      <button class="nav-btn-link" id="navFavBtn" type="button">
+        <svg class="nav-ic"><use href="#i-star"/></svg>
+        <span data-i18n="nav.fav">收藏夹</span>
+        <span class="nav-badge" id="navFavBadge">0</span>
+      </button>
+      <button class="nav-btn-link" id="navHistBtn" type="button">
+        <svg class="nav-ic"><use href="#i-history"/></svg>
+        <span data-i18n="nav.hist">历史记录</span>
+      </button>
+      <a href="#" id="navBatchBtn" data-i18n="nav.batch">批量生成</a>
       <a href="#" id="navAbout" data-i18n="nav.about">关于</a>
       <a href="#" id="navApi" data-i18n="nav.api">API指南</a>
       <a href="#" id="navFaq" data-i18n="nav.faq">常见问题</a>
@@ -68,14 +85,15 @@
     <div class="hero-left">
       <div class="hero-badge">
         <svg><use href="#i-shield"/></svg>
-        <span data-i18n="hero.badge">生成真实格式地址，包含街道、城市、地区、邮编</span>
+        <span data-i18n="hero.badge">生成真实格式地址，包含街道、城市、地区、邮编与数字指纹</span>
       </div>
-      <h1 data-i18n="hero.title">美国地址生成器</h1>
-      <p class="hero-sub" data-i18n="hero.sub">生成真实格式的全球地址用于开发测试</p>
+      <h1 data-i18n="hero.title">真实地址生成器</h1>
+      <p class="hero-sub" data-i18n="hero.sub">全球36国真实住宅与商业地址 · 智能IP归属地匹配 · 账单表单逐格复制 · 开发与风控测试</p>
       <div class="hero-feats">
-        <div class="feat"><svg><use href="#i-city"/></svg><span data-i18n="hero.f1">内置36个国家/地区的真实城市与邮编数据（GeoNames）</span></div>
-        <div class="feat"><svg><use href="#i-copy"/></svg><span data-i18n="hero.f2">一键复制功能，方便快速使用</span></div>
-        <div class="feat"><svg><use href="#i-map"/></svg><span data-i18n="hero.f3">集成Google Maps地图显示，支持OpenStreetMap真实街道</span></div>
+        <div class="feat"><svg><use href="#i-city"/></svg><span data-i18n="hero.f1">内置36国真实城市/邮编（GeoNames/Census）</span></div>
+        <div class="feat"><svg><use href="#i-crosshair"/></svg><span data-i18n="hero.f_ip">支持根据代理IP智能匹配同区域真实地址</span></div>
+        <div class="feat"><svg><use href="#i-copy"/></svg><span data-i18n="hero.f2">Google账单表单对齐，点击任意字段即刻复制</span></div>
+        <div class="feat"><svg><use href="#i-map"/></svg><span data-i18n="hero.f3">Google Maps + 高德地图双引擎预览与火星坐标纠偏</span></div>
       </div>
     </div>
     <div class="hero-right">
@@ -86,6 +104,7 @@
             <span class="hint" data-i18n="hero.cardTitle">地址信息</span>
             <strong id="heroCity">--</strong>
           </div>
+          <button class="hero-fav-btn" id="heroFavBtn" type="button" title="收藏此地址"><svg><use href="#i-star"/></svg></button>
           <svg class="ok" id="heroOk"><use href="#i-check-circle"/></svg>
         </div>
         <button class="hero-addr" id="heroAddr" title="点击复制完整地址">--</button>
@@ -104,6 +123,8 @@
           </div>
         </div>
         <select id="selCountry" class="country-select" aria-label="Country"></select>
+        <!-- 大洲分组切换标签 -->
+        <div class="continent-tabs" id="continentTabs"></div>
         <div class="flag-chips" id="countryChips"></div>
         <div class="country-foot">
           <button class="mini-btn" id="btnRandCountry"><svg><use href="#i-refresh"/></svg><span data-i18n="hero.randomCountry">随机国家</span></button>
@@ -119,32 +140,85 @@
 
 <!-- ========= 主体 ========= -->
 <main class="main">
+
+  <!-- IP 区域预选与定位生成 -->
+  <section class="ip-panel" id="ipPanel">
+    <div class="ip-head">
+      <span class="ip-tag"><svg><use href="#i-crosshair"/></svg></span>
+      <div class="ip-desc">
+        <strong data-i18n="ip.title">IP 区域预选生成</strong>
+        <span class="ip-sub" data-i18n="ip.desc">智能解析当前代理/公网 IP 或手动输入 IPv4/IPv6，自动匹配同城同省真实地址</span>
+      </div>
+      <div class="ip-status-badge" id="ipStatusBadge" hidden></div>
+    </div>
+    <div class="ip-body">
+      <button class="btn soft" id="btnDetectIp" type="button">
+        <svg><use href="#i-radar"/></svg><span data-i18n="ip.detect">使用当前 IP</span>
+      </button>
+      <div class="ip-field">
+        <input type="text" id="ipInput" placeholder="输入 IPv4 或 IPv6 地址（留空直接识别当前网络出口）" autocomplete="off" spellcheck="false">
+        <button class="btn solid" id="btnGenIp" type="button">
+          <svg><use href="#i-bolt"/></svg><span data-i18n="ip.gen">按 IP 区域生成</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <div class="grid">
 
     <!-- 左列 -->
     <div class="col">
+      <!-- 基本信息 -->
       <section class="card" id="cardBasic">
         <h2><span class="cicon blue"><svg><use href="#i-user"/></svg></span><span data-i18n="card.basic">基本信息</span></h2>
         <div class="rows">
           <div class="row"><span class="lb" data-i18n="f.fullName">全名：</span><span class="val" id="f-fullName">--</span><button class="cp" data-copy="fullName" title="复制"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.gender">性别：</span><span class="val" id="f-gender">--</span><button class="cp" data-copy="gender"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.dob">生日：</span><span class="val" id="f-dob">--</span><button class="cp" data-copy="dob"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.age">年龄：</span><span class="val" id="f-age">--</span><button class="cp" data-copy="age"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.zodiac">星座：</span><span class="val" id="f-zodiac">--</span><button class="cp" data-copy="zodiac"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.title">称谓：</span><span class="val" id="f-title">--</span><button class="cp" data-copy="title"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.hair">头发颜色：</span><span class="val" id="f-hair">--</span><button class="cp" data-copy="hair"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.blood">血型：</span><span class="val" id="f-blood">--</span><button class="cp" data-copy="bloodType"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.body">身高/体重/BMI：</span><span class="val" id="f-body">--</span><button class="cp" data-copy="bodyStats"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.edu">最高学历：</span><span class="val" id="f-edu">--</span><button class="cp" data-copy="education"><svg><use href="#i-copy"/></svg></button></div>
         </div>
       </section>
 
+      <!-- 就业与财务 -->
       <section class="card" id="cardJob">
-        <h2><span class="cicon blue"><svg><use href="#i-briefcase"/></svg></span><span data-i18n="card.job">就业信息</span></h2>
+        <h2><span class="cicon blue"><svg><use href="#i-briefcase"/></svg></span><span data-i18n="card.job">就业与财务信息</span></h2>
         <div class="rows">
           <div class="row"><span class="lb" data-i18n="f.occupation">职业：</span><span class="val" id="f-occupation">--</span><button class="cp" data-copy="occupation"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.company">公司：</span><span class="val" id="f-company">--</span><button class="cp" data-copy="company"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.dept">部门/性质：</span><span class="val" id="f-dept">--</span><button class="cp" data-copy="department"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.salary">预估月薪：</span><span class="val" id="f-salary">--</span><button class="cp" data-copy="salary"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.account">银行账户：</span><span class="val" id="f-account">--</span><button class="cp" data-copy="accountDisplayName"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.trans">模拟交易：</span><span class="val" id="f-trans">--</span><button class="cp" data-copy="transactionDesc"><svg><use href="#i-copy"/></svg></button></div>
+        </div>
+      </section>
+
+      <!-- 网络与数字指纹 -->
+      <section class="card" id="cardDigital">
+        <h2><span class="cicon blue"><svg><use href="#i-terminal"/></svg></span><span data-i18n="card.digital">网络与数字指纹</span></h2>
+        <div class="rows">
+          <div class="row"><span class="lb" data-i18n="f.username">用户名：</span><span class="val" id="f-username">--</span><button class="cp" data-copy="username"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.password">强密码：</span><span class="val mono" id="f-password">--</span><button class="cp" data-copy="password"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.secQ">密保问题：</span><span class="val" id="f-secQ">--</span><button class="cp" data-copy="securityQuestion"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.secA">密保答案：</span><span class="val" id="f-secA">--</span><button class="cp" data-copy="securityAnswer"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.os">操作系统：</span><span class="val" id="f-os">--</span><button class="cp" data-copy="os"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.ua">User-Agent：</span><span class="val ua-val" id="f-ua" title="浏览器用户代理">--</span><button class="cp" data-copy="userAgent"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.docIp">虚拟 IP：</span><span class="val mono" id="f-docIp">--</span><button class="cp" data-copy="docIp"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.mac">MAC 地址：</span><span class="val mono" id="f-mac">--</span><button class="cp" data-copy="macAddress"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.uuid">UUID：</span><span class="val mono" id="f-uuid">--</span><button class="cp" data-copy="uuid"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.url">个人主页：</span><span class="val" id="f-url">--</span><button class="cp" data-copy="personalUrl"><svg><use href="#i-copy"/></svg></button></div>
         </div>
       </section>
     </div>
 
     <!-- 中列 -->
     <div class="col">
+      <!-- 账单地址表单 -->
       <section class="card" id="cardBilling">
         <h2>
           <span class="cicon blue"><svg><use href="#i-form"/></svg></span>
@@ -195,8 +269,16 @@
         </div>
       </section>
 
+      <!-- 地址信息（多语言切换） -->
       <section class="card" id="cardAddr">
-        <h2><span class="cicon blue"><svg><use href="#i-pin"/></svg></span><span data-i18n="card.addr">地址信息</span></h2>
+        <div class="card-head-bar">
+          <h2><span class="cicon blue"><svg><use href="#i-pin"/></svg></span><span data-i18n="card.addr">地址信息</span></h2>
+          <div class="seg-tabs" id="addrLangTabs">
+            <button type="button" class="seg-tab active" data-addr-lang="native" data-i18n="addr.native">原语言</button>
+            <button type="button" class="seg-tab" data-addr-lang="en" data-i18n="addr.en">English (拼音)</button>
+            <button type="button" class="seg-tab" data-addr-lang="zh" data-i18n="addr.zh">中文对照</button>
+          </div>
+        </div>
         <div class="rows">
           <div class="row"><span class="lb" data-i18n="f.country">国家：</span><span class="val" id="f-country">--</span><button class="cp" data-copy="country"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.street">街道：</span><span class="val" id="f-street">--</span><button class="cp" data-copy="street"><svg><use href="#i-copy"/></svg></button></div>
@@ -206,51 +288,89 @@
           <div class="row"><span class="lb" data-i18n="f.zip">邮编：</span><span class="val" id="f-zip">--</span><button class="cp" data-copy="zip"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.phone">电话：</span><span class="val" id="f-phone">--</span><button class="cp" data-copy="phone"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.email">邮箱：</span><span class="val" id="f-email">--</span><button class="cp" data-copy="email"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row full-row"><span class="lb" data-i18n="f.fullAddr">单行地址：</span><span class="val" id="f-fullAddr">--</span><button class="cp" data-copy="fullAddress"><svg><use href="#i-copy"/></svg></button></div>
         </div>
       </section>
 
+      <!-- 信用卡信息 -->
       <section class="card" id="cardCard">
-        <h2><span class="cicon blue"><svg><use href="#i-card"/></svg></span><span data-i18n="card.credit">信用卡信息</span></h2>
+        <h2><span class="cicon blue"><svg><use href="#i-card"/></svg></span><span data-i18n="card.credit">信用卡测试信息</span></h2>
         <div class="rows">
-          <div class="row"><span class="lb" data-i18n="f.cardType">卡片类型：</span><span class="val" id="f-cardType">--</span><button class="cp" data-copy="cardType"><svg><use href="#i-copy"/></svg></button></div>
-          <div class="row"><span class="lb" data-i18n="f.cardNumber">卡号：</span><span class="val" id="f-cardNumber">--</span><button class="cp" data-copy="cardNumber"><svg><use href="#i-copy"/></svg></button></div>
-          <div class="row"><span class="lb" data-i18n="f.cardExpiry">有效期：</span><span class="val" id="f-cardExpiry">--</span><button class="cp" data-copy="cardExpiry"><svg><use href="#i-copy"/></svg></button></div>
-          <div class="row"><span class="lb" data-i18n="f.cardCvv">安全码：</span><span class="val" id="f-cardCvv">--</span><button class="cp" data-copy="cardCvv"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.cardType">卡片组织：</span><span class="val" id="f-cardType">--</span><button class="cp" data-copy="cardType"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.cardNumber">卡号：</span><span class="val mono" id="f-cardNumber">--</span><button class="cp" data-copy="cardNumber"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.cardExpiry">有效期：</span><span class="val mono" id="f-cardExpiry">--</span><button class="cp" data-copy="cardExpiry"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.cardCvv">安全码：</span><span class="val mono" id="f-cardCvv">--</span><button class="cp" data-copy="cardCvv"><svg><use href="#i-copy"/></svg></button></div>
         </div>
       </section>
 
+      <!-- 地图预览（双地图与火星坐标纠偏） -->
       <section class="card" id="cardMap">
-        <h2>
-          <span class="cicon blue"><svg><use href="#i-map"/></svg></span>
-          <span data-i18n="card.map">地图位置</span>
-          <a class="hlink" id="gmapsLink" href="#" target="_blank" rel="noopener" data-i18n="map.open">在 Google Maps 中查看 ↗</a>
-        </h2>
-        <div class="map-wrap">
-          <iframe id="mapFrame" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <div class="card-head-bar">
+          <h2>
+            <span class="cicon blue"><svg><use href="#i-map"/></svg></span>
+            <span data-i18n="card.map">地图位置</span>
+          </h2>
+          <div class="seg-tabs" id="mapTabs">
+            <button type="button" class="seg-tab active" data-map-type="google">Google Maps</button>
+            <button type="button" class="seg-tab" data-map-type="amap" id="tabAmap">高德地图 (AMap)</button>
+            <button type="button" class="seg-tab" data-map-type="osm">OpenStreetMap</button>
+          </div>
         </div>
-        <p class="map-src" id="streetSrc"></p>
+        <div class="map-wrap">
+          <iframe id="mapFrame" title="Map Preview" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        </div>
+        <div class="map-foot">
+          <p class="map-src" id="streetSrc"></p>
+          <div class="map-links">
+            <a class="hlink" id="gmapsLink" href="#" target="_blank" rel="noopener" data-i18n="map.openGmaps">在 Google Maps 中查看 ↗</a>
+            <a class="hlink" id="amapLink" href="#" target="_blank" rel="noopener" data-i18n="map.openAmap" style="display:none">在高德地图查看 ↗</a>
+          </div>
+        </div>
       </section>
     </div>
 
     <!-- 右列 -->
     <div class="col side">
+      <!-- 快速操作 -->
       <section class="card" id="cardQuick">
         <h2><span class="cicon blue"><svg><use href="#i-bolt"/></svg></span><span data-i18n="card.quick">快速操作</span></h2>
         <div class="quick">
           <button class="btn soft" id="btnCopyAll"><svg><use href="#i-copy"/></svg><span data-i18n="q.copyAll">复制全部信息</span></button>
-          <button class="btn solid" id="btnGen"><svg><use href="#i-refresh"/></svg><span data-i18n="q.random">随机生成</span></button>
+          <button class="btn solid" id="btnGen"><svg><use href="#i-refresh"/></svg><span data-i18n="q.random">随机生成 (Space)</span></button>
           <button class="btn soft" id="btnTaxFree"><svg><use href="#i-shield"/></svg><span data-i18n="q.taxFree">随机免税地址</span></button>
-          <button class="btn ghost" id="btnExport"><svg><use href="#i-download"/></svg><span data-i18n="q.export">导出JSON</span></button>
+          <button class="btn soft" id="btnFav"><svg><use href="#i-star"/></svg><span data-i18n="q.fav">收藏此地址</span></button>
+          <button class="btn soft" id="btnBatch"><svg><use href="#i-form"/></svg><span data-i18n="q.batch">批量生成与导出</span></button>
+          <div class="quick-row">
+            <button class="btn ghost flex-1" id="btnExport"><svg><use href="#i-download"/></svg><span data-i18n="q.export">JSON</span></button>
+            <button class="btn ghost flex-1" id="btnExportCsv"><svg><use href="#i-download"/></svg><span data-i18n="q.exportCsv">CSV</span></button>
+          </div>
         </div>
       </section>
 
+      <!-- 筛选选项（可搜索 Combobox） -->
       <section class="card" id="cardFilter">
         <h2><span class="cicon blue"><svg><use href="#i-filter"/></svg></span><span data-i18n="card.filter">筛选选项</span></h2>
         <div class="filters">
-          <label class="flb" for="selState" id="lblRegionFilter">选择州</label>
-          <select id="selState"><option value="" data-i18n="flt.anyState">-- 随机 --</option></select>
-          <label class="flb" for="selCity" data-i18n="flt.city">选择城市</label>
-          <select id="selCity"><option value="" data-i18n="flt.anyCity">-- 随机城市 --</option></select>
+          <label class="flb" for="comboStateInput" id="lblRegionFilter">选择州</label>
+          <div class="combobox-wrap" id="comboStateWrap">
+            <div class="combo-input-box">
+              <input type="text" class="combo-input" id="comboStateInput" placeholder="-- 搜索或选择州/省 --" autocomplete="off">
+              <button type="button" class="combo-arrow" id="comboStateBtn" aria-label="Toggle dropdown"><svg><use href="#i-chevron-down"/></svg></button>
+            </div>
+            <div class="combo-dropdown" id="comboStateList" hidden></div>
+            <select id="selState" style="display:none"></select>
+          </div>
+
+          <label class="flb" for="comboCityInput" data-i18n="flt.city">选择城市</label>
+          <div class="combobox-wrap" id="comboCityWrap">
+            <div class="combo-input-box">
+              <input type="text" class="combo-input" id="comboCityInput" placeholder="-- 搜索或选择城市 --" autocomplete="off">
+              <button type="button" class="combo-arrow" id="comboCityBtn" aria-label="Toggle dropdown"><svg><use href="#i-chevron-down"/></svg></button>
+            </div>
+            <div class="combo-dropdown" id="comboCityList" hidden></div>
+            <select id="selCity" style="display:none"></select>
+          </div>
+
           <label class="chk">
             <input type="checkbox" id="chkHouse" checked>
             <span><b data-i18n="flt.house">仅生成包含门牌号的地址</b><i data-i18n="flt.houseHint">启用后生成街道地址中包含数字的地址（如：123 Main St）</i></span>
@@ -263,6 +383,7 @@
         </div>
       </section>
 
+      <!-- 热门城市 -->
       <section class="card" id="cardHot">
         <h2><span class="cicon blue"><svg><use href="#i-star"/></svg></span><span data-i18n="card.hot">热门城市</span>
           <button class="hlink asbtn" id="hotToggle" data-i18n="hot.collapse">✓ 收起列表</button>
@@ -275,8 +396,8 @@
 </main>
 
 <footer class="foot">
-  <p><span data-i18n="foot.disclaimer">本工具生成的所有身份信息、地址、电话、邮箱及卡号均为随机虚构数据，仅供软件开发与测试使用，请勿用于伪造身份或其他非法用途。</span></p>
-  <p class="muted">© 2026 美国地址生成器 · <span data-i18n="foot.src">数据来源：GeoNames (CC BY 4.0)、US Census ZCTA Gazetteer、OpenStreetMap (ODbL)</span></p>
+  <p><span data-i18n="foot.disclaimer">本工具生成的所有身份信息、地址、电话、邮箱、卡号及网络指纹均为随机虚构数据，仅供软件开发、表单测试与风控实验使用，请勿用于伪造身份或其他非法用途。</span></p>
+  <p class="muted">© 2026 真实地址生成器 · <span data-i18n="foot.src">数据来源：GeoNames (CC BY 4.0)、US Census ZCTA Gazetteer、OpenStreetMap (ODbL)</span></p>
 </footer>
 
 <!-- ========= 模态框 ========= -->
@@ -290,7 +411,7 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="js/countries_data.js?v=20261003"></script>
-<script src="js/names.js?v=20261003"></script>
-<script src="js/app.js?v=20261005e"></script>
+<script src="js/names.js?v=20261107a"></script>
+<script src="js/app.js?v=20261107a"></script>
 </body>
 </html>

@@ -1,84 +1,100 @@
-# 地址生成器 · Cloudflare Workers / Pages 版
+# 真实地址与身份生成器 (Realistic Worldwide Address & Identity Generator)
 
-与主项目完全相同的**多国地址生成器**（36 国真实城市数据、本地化生成、OSM 真实街道、Google 地图、中英双语、**账单地址表单逐字段复制**），改造为可直接部署到 **Cloudflare Pages + Pages Functions** 的版本。
+一个纯前端的**全球真实地址与数字身份生成器**，支持全球 **36 个国家/地区** 的真实住宅与商业地址，完美对齐国际标准与主流电商/外贸支付表单规范。内置完整虚拟身份画像、IP 区域归属地精准生成、Google/高德双地图引擎与火星坐标纠偏。
 
-- 线上地址：<https://adress-1kx.pages.dev/>（Pages 项目名 `adress`）
-- 部署命令：`npx wrangler pages deploy . --project-name=adress --branch=main`
+> 零后端存储依赖，无需配置数据库，生成逻辑 100% 在浏览器本地运行。可直接双击 `index.html` 使用，或一键部署至 Cloudflare Pages。
 
-**零存储依赖**：不使用 KV / R2 / D1 / Durable Objects——生成逻辑 100% 在浏览器本地运行；Functions 只做两个数据代理（转发 GeoNames 与人口普查文件，边缘缓存后透传），完全在免费额度内。
+---
 
-## 目录内容
+## ✨ 核心功能与亮点
 
+- 🌐 **全球 36 国真实城市/邮编库**：涵盖北美、欧洲、东亚、东南亚、大洋洲、拉美与中东，数据源自 GeoNames（CC BY 4.0）与美国人口普查局 ZCTA Gazetteer，真实准确。
+- 📍 **智能 IP 区域预选与定位生成**：支持自动识别当前节点/代理的公网出口 IP 或手动输入 IPv4/IPv6，自动匹配同省同城真实地址，跨境电商与账号防风控必备。
+- 👤 **完整数字身份与虚拟指纹**：
+  - **基本生理信息**：全名、性别、生日、年龄、星座、头发颜色、血型、身高/体重/BMI 计算、最高学历。
+  - **就业与财务**：职业、所属公司、部门级别、合理币种预估月薪、银行支票账户、模拟消费交易明细。
+  - **网络与安全指纹**：用户名、随机强密码（大小写+数字+特殊字符）、密保问题与真实回答、操作系统、最新主流桌面/移动端 User-Agent、虚拟文档 IP、MAC 地址、UUID。
+- 📋 **Google 账单地址表单（逐字段复制）**：同构对齐 Google / Stripe 账单表单，点击任意输入格直接复制，支持一键复制整表与标准多行地址块（含美/英/加/印等国 GSTIN/税号）。
+- 🗺️ **双地图引擎与火星坐标纠偏**：
+  - 支持 **Google Maps**、**高德地图 (AMap)** 与 **OpenStreetMap** 三大引擎切换。
+  - 内置 **WGS-84 转 GCJ-02（火星坐标系）算法**，精准纠正国内地图坐标偏移，并提供一键高德/谷歌外部导航链接。
+- 🔤 **多语言展示与中文拼音对照**：
+  - 地址卡片支持 **原语言 (Native)**、**English (拼音)** 与 **中文对照** 实时切换。
+  - 针对中国地址提供标准英文拼音邮政规范（如 `No. 88 South Zhongguancun Street, Haidian District, Beijing, 100081, China`）。
+- 🔍 **可搜索 Combobox 下拉选择器**：支持关键词即时模糊搜索州/省与城市，并显示实时可用数量统计（如 `匹配 15 / 56 州`）。
+- 🌍 **按大洲分类国家导航**：支持按北美洲、欧洲、东亚/东南亚、中东/南亚、大洋洲、拉美/非洲分类筛选，一键无缝换国。
+- ⭐ **收藏夹与最近历史记录**：基于 `localStorage` 离线持久化存储，支持单条地址加星收藏、恢复最近 20 条历史生成记录、单独复制或批量导出。
+- 📦 **批量生成与 CSV / JSON 导出**：可一次性随机生成 5/10/20/50 条真实地址，支持在线表格预览与一键导出 UTF-8 CSV / JSON。
+- ⚡ **全局快捷键与交互优化**：
+  - 按 **空格键 (Space)** 立即重新随机生成；
+  - 页面任意字段文本 **双击 (Double Click)** 快速复制。
+
+---
+
+## 🚀 运行方式
+
+### 方式一（本地服务，推荐）
+```bash
+python server.py
+# 打开 http://127.0.0.1:8790/
 ```
-index.html               页面结构（含「账单地址表单」卡片）
-update.html              数据更新页（浏览器内重建 countries_data.js）
-css/style.css            样式
-js/countries_data.js     36 国真实城市/邮编/坐标（构建产物，含数据版本戳）
-js/names.js              各国元数据 + 24 语种人名池
-js/app.js                生成逻辑、国家切换、OSM 真实街道、地图、i18n、账单表单
-functions/api/ping.js    GET  /api/ping      探测更新服务（返回 cf:true）
-functions/api/zip/[cc].js GET /api/zip/{CC}  GeoNames 邮编 zip 代理（36 国白名单 + 边缘缓存）
-functions/api/gaz.js     GET  /api/gaz       美国人口普查 ZCTA 坐标表代理（领地坐标用）
-_headers                 静态资源缓存策略
-wrangler.toml            Cloudflare 配置
+提供本地静态资源托管与数据更新接口（`/api/ping`、`/api/client-context`、`/api/update`）。
+
+### 方式二（静态 HTTP 服务）
+```bash
+python -m http.server 8080
+# 打开 http://127.0.0.1:8080/
 ```
 
-## 部署方法
+### 方式三（纯前端直接打开）
+直接双击根目录下的 `index.html`（通过 `file://` 打开，全部生成功能、收藏夹与导出功能 100% 完整可用）。
 
-### 方式一：命令行（推荐）
+---
 
+## ☁️ Cloudflare Pages / Workers 部署
+
+项目包含完整的 Cloudflare Pages 部署目录 `Workers 和 Pages/`：
+1. 本地目录：`Workers 和 Pages/`
+2. 包含 Pages Functions 接口：
+   - `GET /api/client-context`：利用 Cloudflare 边缘环境自动读取访问者的 IP、国家、省份、城市与经纬度。
+   - `GET /api/zip/{CC}`：GeoNames 邮编数据代理转发与边缘缓存。
+   - `GET /api/gaz`：美国人口普查 ZCTA 坐标表代理。
+   - `GET /api/ping`：更新服务状态探测。
+
+### 部署命令
 ```bash
 cd "Workers 和 Pages"
-npx wrangler login                 # 首次使用需登录（浏览器授权）
 npx wrangler pages deploy . --project-name=adress --branch=main
 ```
 
-完成后输出形如 `https://xxxx.adress.pages.dev` 的线上地址（项目名可自行更换）。
+---
 
-### 方式二：GitHub 自动部署
+## 🛠️ URL 参数与控制台 API
 
-在 Cloudflare Dashboard → Workers & Pages → 创建 Pages 项目 → 连接 GitHub 仓库 `zhengwuji/adress`：
-- 构建命令：留空
-- 输出目录：`Workers 和 Pages`
+### URL 参数
+| 参数 | 说明 | 示例 |
+|------|------|------|
+| `country` | 国家代码（36 国） | `?country=DE`、`?country=JP` |
+| `state` | 地区（美国用州缩写，其他国家支持名称或代码） | `?country=US&state=CA`、`?country=IN&state=Delhi` |
+| `city` | 城市名 | `?city=Los Angeles` |
+| `house` | 1=强制门牌号，0=允许无门牌号 | `?house=1` |
+| `free` | 1=仅限美国免税州 (AK/DE/MT/NH/OR) | `?free=1` |
 
-之后每次 `git push` 自动重新部署。
-
-## 数据更新（无需 KV 的方案）
-
-GeoNames 数据每日更新。由于 Pages 是纯静态托管、且不使用任何存储，更新采用**浏览器内重建**方案：
-
-1. 打开线上站点，点击国家卡片右下角「**更新数据**」→ 自动跳转到 `/update.html`（也可直接访问该地址）；
-2. 点「开始更新」→ 页面经 `/api/zip/{CC}` 代理依次拉取 36 国最新数据（约 100MB，1-3 分钟），在你的浏览器中完成解析、过滤、构建（逻辑与主项目 `tools/build_data.py` 完全一致）；
-3. 构建完成后下载新的 `countries_data.js`，替换项目中的 `js/countries_data.js`；
-4. 重新部署（`npx wrangler pages deploy .` 或推送 GitHub 触发自动部署），页面上的「数据版本」时间戳即为新版本。
-
-> 为什么不直接在服务端重建？Workers 免费版有 CPU 时间限制且无免费持久存储；浏览器端重建不受限制、零成本，且数据仍然只经过本站代理的官方源头（GeoNames / 美国人口普查局）。
-
-## 本地预览
-
-```bash
-cd "Workers 和 Pages"
-npx wrangler pages dev . --port 8788
-# 打开 http://127.0.0.1:8788/
+### JavaScript 控制台 API
+页面全局挂载 `USAddressGen` 对象：
+```javascript
+USAddressGen.generate()                      // 随机生成
+USAddressGen.generate({ state: 'CA' })       // 指定地区生成
+USAddressGen.generate({ taxFree: true })     // 免税州生成
+USAddressGen.setCountry('JP')                // 切换国家
+USAddressGen.getFavorites()                  // 获取所有收藏夹数据
+USAddressGen.exportFavoritesCsv()            // 导出收藏夹 CSV
+USAddressGen.last                            // 获取最近一次生成的完整数据对象
 ```
 
-本地预览同样带 Functions 代理，「更新数据」全流程可测试。
+---
 
-## 与主项目的差异
-
-| 项目 | 主项目（本地版） | 本目录（Cloudflare 版） |
-|------|------------------|--------------------------|
-| 生成功能 | 相同（纯前端） | 相同（纯前端） |
-| 账单地址表单 | 相同 | 相同 |
-| 运行方式 | `python server.py` / 双击 index.html | Cloudflare Pages 托管 |
-| 数据更新 | 页面内一键重建（server.py 接口）或命令行 | `/update.html` 浏览器内重建 + 重新部署 |
-| 存储 | 本地文件 | 无（不用 KV/R2，仅 Functions 代理 + 边缘缓存） |
-
-## 更新记录
-
-- **v1.1.1（2026-10-05）**：同步主项目「账单地址表单」卡片（Google 表单同构字段、逐字段点击复制、复制整张表单/地址块、国家化邮编与 GSTIN 标签）；URL 参数 `?country=IN&state=Delhi` 支持地区英文全名。已部署至 <https://adress-1kx.pages.dev/>。
-- **v1.1.0（2026-10-02）**：首个 Cloudflare 版（全球化 36 国 + 浏览器内数据更新）。
-
-## 免责声明
-
-本工具生成的所有身份信息、地址、电话、邮箱及卡号均为**随机虚构数据**：卡号仅通过 Luhn 格式校验、无对应真实账户，**不可用于任何真实交易**。仅供软件开发与测试使用，请勿用于伪造身份、欺诈或其他非法用途。
+## 📜 免责声明
+本工具生成的所有个人姓名、生日、地址、电话、邮箱、卡号、密码及网络指纹均为**随机虚构数据**：
+- 卡号仅通过 Luhn 校验位算法生成，没有真实银行账户关联，**不可用于任何真实交易**。
+- 请勿将本工具用于任何违法欺诈、伪造个人身份或其他非法用途。仅供软件开发测试、表单布局验证及风控测试使用。

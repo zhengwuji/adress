@@ -503,8 +503,119 @@
 
   const POPULAR_CC = ["US", "CA", "GB", "DE", "FR", "IT", "ES", "JP", "CN", "KR", "AU", "BR"];
 
+  /* ================= 扩展：大洲分组、网络指纹、密保与拼音 ================= */
+  const CONTINENTS = {
+    na: { zh: "北美洲", en: "North America", cc: ["US", "CA", "MX"] },
+    eu: { zh: "欧洲", en: "Europe", cc: ["GB", "IE", "FR", "DE", "IT", "ES", "PT", "NL", "BE", "AT", "CH", "PL", "SE", "NO", "DK", "RU"] },
+    ea: { zh: "东亚/东南亚", en: "East & SE Asia", cc: ["CN", "JP", "KR", "MY", "ID", "TH", "PH"] },
+    sa: { zh: "南亚/中东", en: "South Asia & Middle East", cc: ["IN", "AE", "TR"] },
+    oc: { zh: "大洋洲", en: "Oceania", cc: ["AU", "NZ"] },
+    la: { zh: "拉美/非洲", en: "Latin America & Africa", cc: ["BR", "AR", "CL", "CO", "ZA"] }
+  };
+
+  const SECURITY_QUESTIONS = [
+    { zh: "你出生在哪座城市？", en: "What city were you born in?", ansZh: ["北京", "上海", "广州", "成都", "武汉", "杭州", "南京", "西安"], ansEn: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Seattle", "Austin", "Boston"] },
+    { zh: "你第一只宠物的名字？", en: "What was the name of your first pet?", ansZh: ["旺财", "豆豆", "奶茶", "咪咪", "小白", "皮皮", "可乐", "汤圆"], ansEn: ["Buddy", "Max", "Charlie", "Bella", "Luna", "Rocky", "Lucky", "Coco"] },
+    { zh: "你母亲的娘家姓氏？", en: "What is your mother's maiden name?", ansZh: ["张", "王", "李", "赵", "刘", "陈", "杨", "黄"], ansEn: ["Smith", "Miller", "Taylor", "Wilson", "Anderson", "Thomas", "Jackson", "White"] },
+    { zh: "你就读的高中名称？", en: "What was the name of your high school?", ansZh: ["第一中学", "实验中学", "外国语学校", "师范附中", "育才中学"], ansEn: ["Lincoln High", "Central High", "Oak Creek High", "Roosevelt High", "Westfield High"] },
+    { zh: "你的童年绰号是什么？", en: "What was your childhood nickname?", ansZh: ["小飞侠", "胖虎", "皮皮", "乐乐", "大头", "天天"], ansEn: ["Speedy", "Ace", "Sparky", "Peanut", "Tiger", "Scooter", "Champ"] },
+    { zh: "你第一辆车的品牌？", en: "What was the make of your first car?", ansZh: ["大众", "丰田", "本田", "别克", "日产", "比亚迪"], ansEn: ["Toyota", "Honda", "Ford", "Chevrolet", "Volkswagen", "Nissan", "Subaru"] },
+    { zh: "你最喜欢的儿时玩伴名字？", en: "What was the name of your childhood best friend?", ansZh: ["浩然", "宇轩", "奕辰", "欣怡", "雨涵", "梓萱"], ansEn: ["Alex", "Jordan", "Sam", "Chris", "Taylor", "Morgan", "Riley"] }
+  ];
+
+  const USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.86 Mobile Safari/537.36"
+  ];
+
+  const OPERATING_SYSTEMS = [
+    "Windows 11 Pro 64-bit (24H2)",
+    "Windows 10 Enterprise 64-bit",
+    "macOS Sequoia (15.1)",
+    "macOS Sonoma (14.7)",
+    "Ubuntu 24.04 LTS (x86_64)",
+    "iOS 18.1 (22B83)",
+    "Android 15 (AP4A.241005.015)"
+  ];
+
+  const EDUCATION_LEVELS = [
+    { zh: "高中毕业", en: "High School Diploma" },
+    { zh: "大专 / 副学士", en: "Associate Degree" },
+    { zh: "学士 / 本科", en: "Bachelor's Degree" },
+    { zh: "硕士研究生", en: "Master's Degree" },
+    { zh: "博士学位", en: "Doctorate (Ph.D.)" }
+  ];
+
+  const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+
+  const ZODIAC_SIGNS = [
+    { zh: "摩羯座", en: "Capricorn", m1: 12, d1: 22, m2: 1, d2: 19 },
+    { zh: "水瓶座", en: "Aquarius", m1: 1, d1: 20, m2: 2, d2: 18 },
+    { zh: "双鱼座", en: "Pisces", m1: 2, d1: 19, m2: 3, d2: 20 },
+    { zh: "白羊座", en: "Aries", m1: 3, d1: 21, m2: 4, d2: 19 },
+    { zh: "金牛座", en: "Taurus", m1: 4, d1: 20, m2: 5, d2: 20 },
+    { zh: "双子座", en: "Gemini", m1: 5, d1: 21, m2: 6, d2: 21 },
+    { zh: "巨蟹座", en: "Cancer", m1: 6, d1: 22, m2: 7, d2: 22 },
+    { zh: "狮子座", en: "Leo", m1: 7, d1: 23, m2: 8, d2: 22 },
+    { zh: "处女座", en: "Virgo", m1: 8, d1: 23, m2: 9, d2: 22 },
+    { zh: "天秤座", en: "Libra", m1: 9, d1: 23, m2: 10, d2: 23 },
+    { zh: "天蝎座", en: "Scorpio", m1: 10, d1: 24, m2: 11, d2: 22 },
+    { zh: "射手座", en: "Sagittarius", m1: 11, d1: 23, m2: 12, d2: 21 }
+  ];
+
+  const DEPARTMENTS = [
+    { zh: "技术研发部", en: "Engineering & Tech" },
+    { zh: "产品与设计部", en: "Product & Design" },
+    { zh: "市场销售部", en: "Sales & Marketing" },
+    { zh: "财务与风控部", en: "Finance & Accounting" },
+    { zh: "人力资源部", en: "Human Resources" },
+    { zh: "客户运营部", en: "Customer Operations" },
+    { zh: "战略管理部", en: "Strategy & Management" }
+  ];
+
+  const TRANSACTION_DESCS = [
+    "POS PURCHASE · AMAZON.COM WA",
+    "RECURRING · NETFLIX.COM CA",
+    "ONLINE PAYMENT · APPLE.COM/BILL",
+    "POS REF · WAL-MART SUPERCENTER",
+    "CARD PURCHASE · STARBUCKS STORE",
+    "PAYMENT · GOOGLE *SERVICES",
+    "POS DEBIT · TARGET STORES",
+    "TRANSACTION · UBER TRIP HELP.UBER"
+  ];
+
+  const CN_PROVINCES_EN = {
+    "北京市": "Beijing", "上海市": "Shanghai", "天津市": "Tianjin", "重庆市": "Chongqing",
+    "广东省": "Guangdong", "浙江省": "Zhejiang", "江苏省": "Jiangsu", "山东省": "Shandong",
+    "四川省": "Sichuan", "湖北省": "Hubei", "湖南省": "Hunan", "河南省": "Henan",
+    "河北省": "Hebei", "陕西省": "Shaanxi", "福建省": "Fujian", "安徽省": "Anhui",
+    "辽宁省": "Liaoning", "吉林省": "Jilin", "黑龙江省": "Heilongjiang", "江西省": "Jiangxi",
+    "山西省": "Shanxi", "云南省": "Yunnan", "贵州省": "Guizhou", "广西壮族自治区": "Guangxi",
+    "内蒙古自治区": "Inner Mongolia", "新疆维吾尔自治区": "Xinjiang", "西藏自治区": "Tibet",
+    "宁夏回族自治区": "Ningxia", "青海省": "Qinghai", "甘肃省": "Gansu", "海南省": "Hainan",
+    "香港特别行政区": "Hong Kong", "澳门特别行政区": "Macau", "台湾省": "Taiwan"
+  };
+
+  const CN_STREETS_EN = {
+    "中山路": "Zhongshan Road", "人民路": "Renmin Road", "建设路": "Jianshe Road",
+    "解放路": "Jiefang Road", "和平路": "Heping Road", "文化路": "Wenhua Road",
+    "新华路": "Xinhua Road", "光明路": "Guangming Road", "朝阳路": "Chaoyang Road",
+    "长江路": "Changjiang Road", "黄河路": "Huanghe Road", "学院路": "Xueyuan Road",
+    "青年路": "Qingnian Road", "幸福路": "Xingfu Road", "振兴路": "Zhenxing Road",
+    "团结路": "Tuanjie Road", "康乐路": "Kangle Road", "迎宾大道": "Yingbin Avenue",
+    "望江路": "Wangjiang Road", "桂花路": "Guihua Road", "滨河路": "Binhe Road", "广场路": "Guangchang Road"
+  };
+
   window.ADDR_NAMES = {
     LOCALES, AREA_CODES, US_STATES, COUNTRIES, FAMOUS_ZH, POPULAR_CC,
+    CONTINENTS, SECURITY_QUESTIONS, USER_AGENTS, OPERATING_SYSTEMS,
+    EDUCATION_LEVELS, BLOOD_TYPES, ZODIAC_SIGNS, DEPARTMENTS, TRANSACTION_DESCS,
+    CN_PROVINCES_EN, CN_STREETS_EN,
     HAIR: ["Blonde", "Brown", "Black", "Dark Brown", "Light Brown", "Red", "Auburn", "Gray", "Chestnut", "Sandy"],
     OCCUPATIONS: ["Software Engineer", "Registered Nurse", "Elementary School Teacher", "Real Estate Appraiser", "Accountant", "Marketing Manager", "Truck Driver", "Electrician", "Dental Hygienist", "Pharmacist", "Physical Therapist", "Civil Engineer", "Financial Analyst", "Graphic Designer", "Human Resources Manager", "Insurance Agent", "Attorney", "Librarian", "Logistics Manager", "Automotive Mechanic", "Medical Assistant", "Network Administrator", "Paramedic", "Airline Pilot", "Plumber", "Police Officer", "Project Manager", "Property Manager", "Psychologist", "Receptionist", "Sales Manager", "Social Worker", "Data Analyst", "Land Surveyor", "Tax Preparer", "Urban Planner", "Veterinary Technician", "Web Developer", "Welder", "Executive Chef", "Barber", "Bank Teller", "Bookkeeper", "Bus Driver", "Carpenter", "Cashier", "Chemist", "Childcare Worker", "Chiropractor", "Claims Adjuster", "Construction Manager", "Cosmetologist", "Customer Service Representative", "Database Administrator", "Dietitian", "Dispatcher", "Physician", "Editor", "Environmental Scientist", "Cost Estimator", "Event Planner", "Firefighter", "Fitness Trainer", "Flight Attendant", "Forester", "Funeral Director", "Geologist", "Home Health Aide", "Hotel Manager", "Insurance Underwriter", "Interior Designer", "Interpreter", "Journalist", "Landscape Architect", "Locksmith", "Machinist", "Mail Carrier", "Massage Therapist", "Nurse Practitioner", "Occupational Therapist", "Optometrist", "House Painter", "Paralegal", "Photographer", "Physician Assistant", "Preschool Teacher", "Radiologic Technologist", "Real Estate Agent", "Roofer", "Security Guard", "Sheet Metal Worker", "Speech-Language Pathologist", "Taxi Driver", "Teaching Assistant", "Translator", "Veterinarian", "Waiter", "Store Manager", "Statistical Analyst"],
     COMPANY_A: ["Blue Ridge", "Silverline", "Northstar", "Harbor Point", "Summit", "Cascade", "Redwood", "Ironwood", "Brightside", "Clearwater", "Pinnacle", "Stonebridge", "Falcon Ridge", "Maplewood", "Crestview", "Lakeshore", "Pinehurst", "Goldleaf", "Riverbend", "Whitman", "Harrington", "Carter", "Bellamy", "Kingsford", "Ashford", "Westbrook", "Fairchild", "Lockhart", "Merritt", "Vanderbilt"],

@@ -17,7 +17,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-PORT = 8765
+PORT = 8790
 
 _state = {"running": False, "started": False, "ok": None, "log": []}
 _lock = threading.Lock()
@@ -67,6 +67,8 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/ping":
             return self._json({"ok": True, "updater": True})
+        if self.path == "/api/client-context":
+            return self._json({"ok": True, "ip": self.client_address[0], "local": True})
         if self.path == "/api/update/status":
             with _lock:
                 return self._json({k: (list(v) if isinstance(v, list) else v) for k, v in _state.items()})
