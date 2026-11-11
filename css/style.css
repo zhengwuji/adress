@@ -518,3 +518,110 @@ svg { fill: currentColor; }
 .mini-action { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 3px 7px; font-size: 11.5px; color: var(--ink-2); }
 .mini-action:hover { border-color: var(--blue-500); color: var(--blue-600); background: var(--blue-50); }
 .mini-action.danger:hover { border-color: #ef4444; color: #dc2626; background: #fef2f2; }
+
+/* ============ 信用卡批量生成器 ============ */
+.cgen-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin: 4px 0 6px; }
+.cgen-field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 190px; }
+.cgen-lb { font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
+.cgen-field select, .cgen-field input {
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
+  font-size: 14px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.cgen-field select:focus, .cgen-field input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59, 130, 246, .15); }
+.cgen-btn { flex: 0 0 auto; height: 41px; padding: 0 26px; font-weight: 700; gap: 6px; }
+.cgen-btn svg { width: 15px; height: 15px; }
+.cgen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 12px; }
+.cgen-grid:empty { display: none; }
+.cgen-note { margin: 12px 0 2px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+.ccard { position: relative; border-radius: 14px; padding: 16px 18px 14px; min-height: 168px; color: #fff; overflow: hidden; box-shadow: 0 8px 20px -10px rgba(15, 23, 42, .35); }
+.ccard-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.ccard-brand { font-size: 16.5px; font-weight: 800; letter-spacing: .3px; }
+.ccard-chip { width: 36px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #f6d67e, #c9a13f); border: 1px solid rgba(0, 0, 0, .18); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25); }
+.ccard-num { font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 18px; letter-spacing: .8px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ccard-row { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12.5px; font-weight: 700; }
+.ccard-kv i { font-style: normal; opacity: .8; font-weight: 600; }
+.ccard-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; }
+.ccard-name { font-size: 15px; font-weight: 700; max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ccard-mark { font-size: 13px; font-weight: 800; letter-spacing: .5px; display: inline-flex; align-items: center; }
+
+/* 点击复制交互 */
+.ccard .cc-copy { position: relative; cursor: copy; }
+.ccard .ccard-tip {
+  position: absolute; bottom: calc(100% + 5px); right: 0; background: #0f172a; color: #fff;
+  font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 2;
+}
+.ccard .cc-copy:hover .ccard-tip { opacity: 1; }
+.ccard .cc-copy.copied .ccard-tip { opacity: 1; }
+
+/* 品牌卡面配色 */
+.ccard.cc-visa { background: linear-gradient(135deg, #1a1f71 0%, #2e4bb1 60%, #3b5bd6 100%); }
+.ccard.cc-master { background: linear-gradient(135deg, #f7f3ef 0%, #ead9c3 100%); color: #0f172a; }
+.ccard.cc-amex { background: linear-gradient(135deg, #dcc684 0%, #c3a957 100%); color: #0f172a; }
+.ccard.cc-upay { background: linear-gradient(135deg, #eef3fa 0%, #d7e6f7 100%); color: #0f172a; }
+.ccard.cc-diners { background: linear-gradient(135deg, #004a97 0%, #0079be 100%); }
+.ccard.cc-discover { background: linear-gradient(135deg, #e55c20 0%, #ff9e1b 100%); }
+.ccard.cc-jcb { background: linear-gradient(135deg, #0e4c96 0%, #0b7bbf 100%); }
+.ccard.cc-misc { background: linear-gradient(135deg, #475569 0%, #64748b 100%); }
+
+/* 品牌角标 */
+.mark-visa { font-style: italic; }
+.mark-mc { display: inline-flex; }
+.mark-mc i { width: 24px; height: 24px; border-radius: 50%; background: #eb001b; display: inline-block; }
+.mark-mc i:last-child { background: #f79e1b; margin-left: -10px; mix-blend-mode: multiply; opacity: .92; }
+.mark-amex { background: #2557a7; color: #fff; padding: 3px 7px; border-radius: 4px; font-size: 11px; }
+.mark-up { display: inline-flex; gap: 2px; }
+.mark-up i { width: 8px; height: 20px; border-radius: 2px; display: inline-block; }
+.mark-up i:nth-child(1) { background: #e21836; }
+.mark-up i:nth-child(2) { background: #00447c; }
+.mark-up i:nth-child(3) { background: #007b84; }
+.mark-dc { display: inline-flex; }
+.mark-dc i { width: 22px; height: 22px; border-radius: 50%; border: 4px solid #fff; display: inline-block; background: transparent; box-sizing: border-box; }
+.mark-disc i { font-style: normal; color: #ffd24d; }
+.mark-jcb { display: inline-flex; gap: 2px; }
+.mark-jcb i { width: 20px; height: 22px; border-radius: 4px; color: #fff; font-size: 12px; font-style: normal; display: inline-flex; align-items: center; justify-content: center; }
+.mark-jcb i:nth-child(1) { background: #0e7a3d; }
+.mark-jcb i:nth-child(2) { background: #bc1e2d; }
+.mark-jcb i:nth-child(3) { background: #1a4fa0; }
+
+/* 信用卡生成器通栏（.grid 直接子元素，占满三列） */
+.card-wide { grid-column: 1 / -1; }
+
+/* ============ 信用卡校验器 ============ */
+.cval-row { display: flex; gap: 12px; margin: 4px 0 8px; flex-wrap: wrap; }
+.cval-input {
+  flex: 1 1 260px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: #fff; font-size: 15px; font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+  color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.cval-input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(59, 130, 246, .15); }
+.cval-result { display: none; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: #f8fafc; border: 1px solid var(--line); }
+.cval-result.show { display: flex; }
+.cval-badge { font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+.cval-badge.ok { background: #dcfce7; color: #15803d; }
+.cval-badge.bad { background: #fee2e2; color: #dc2626; }
+.cval-chip { font-size: 13px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); padding: 4px 12px; border-radius: 999px; }
+.cval-chip b { color: var(--blue-600); }
+.cval-len { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* ============ 扩充品牌卡面 ============ */
+.ccard.cc-maestro { background: linear-gradient(135deg, #0f2b5c 0%, #1f5fa8 100%); }
+.ccard.cc-rupay { background: linear-gradient(135deg, #1d734a 0%, #35b06f 100%); }
+.ccard.cc-mir { background: linear-gradient(135deg, #005c9e 0%, #00a3e0 100%); }
+.ccard.cc-troy { background: linear-gradient(135deg, #e2001a 0%, #ff6a13 100%); }
+.ccard.cc-uatp { background: linear-gradient(135deg, #3d3d4e 0%, #6b6b82 100%); }
+
+.mark-maestro { background: #fff; color: #0f2b5c; padding: 3px 10px; border-radius: 999px; font-size: 11px; }
+.mark-rupay { background: #fff; color: #1d734a; padding: 3px 10px; border-radius: 999px; font-size: 11px; }
+.mark-mir { background: #fff; color: #005c9e; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-style: italic; }
+.mark-troy { background: #fff; color: #e2001a; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 900; }
+.mark-uatp { background: #fff; color: #3d3d4e; padding: 3px 10px; border-radius: 4px; font-size: 11px; letter-spacing: 1px; }
+
+/* 新增品牌（Elo/Hipercard/Dankort） */
+.ccard.cc-elo { background: linear-gradient(135deg, #23201d 0%, #4a453e 100%); }
+.ccard.cc-hiper { background: linear-gradient(135deg, #8e0e15 0%, #d3232f 100%); }
+.ccard.cc-dankort { background: linear-gradient(135deg, #a01622 0%, #d5232e 100%); }
+.mark-elo { background: #ffe000; color: #23201d; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 900; letter-spacing: 1px; }
+.mark-hiper { background: #fff; color: #b3161d; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; }
+.mark-dankort { background: #fff; color: #a01622; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; }

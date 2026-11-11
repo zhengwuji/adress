@@ -12,9 +12,14 @@
   const LOCALES = N.LOCALES;
 
   const $ = (id) => document.getElementById(id);
-  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const rint = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const H = { ri: rint, dg: (n) => { let s = ""; for (let i = 0; i < n; i++) s += rint(0, 9); return s; }, rand };
+  /* 随机源：names.js 建立共享槽位 __ADDR_RNG；seed 模式下整体替换为带种子 PRNG */
+  const RNG = window.__ADDR_RNG || (window.__ADDR_RNG = { rng: Math.random });
+  const rngf = () => RNG.rng();
+  const coin = (p) => (RNG.rng() < (p === undefined ? 0.5 : p));
+  const rand = (arr) => arr[Math.floor(RNG.rng() * arr.length)];
+  const rint = (min, max) => Math.floor(RNG.rng() * (max - min + 1)) + min;
+  const H = { ri: rint, dg: (n) => { let s = ""; for (let i = 0; i < n; i++) s += rint(0, 9); return s; }, rand, coin };
+  const CC = window.CC_CORE;
   const flagOf = (cc) => String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 
   /* ================= i18n 字典 ================= */
@@ -61,6 +66,11 @@
       "f.country": "国家：", "f.street": "街道：", "f.city": "城市：", "f.zip": "邮编：",
       "f.phone": "电话：", "f.email": "邮箱：", "f.fullAddr": "单行地址：",
       "f.cardType": "卡片组织：", "f.cardNumber": "卡号：", "f.cardExpiry": "有效期：", "f.cardCvv": "安全码：",
+      "f.bankAccount": "银行账号：", "f.swift": "SWIFT/BIC：",
+      "cval.title": "信用卡校验器", "cval.placeholder": "输入卡号（可含空格，12-19 位）", "cval.check": "校验",
+      "cval.valid": "✓ 有效卡号", "cval.invalid": "✗ 无效卡号", "cval.brand": "品牌", "cval.unknown": "未识别品牌",
+      "cval.hint": "基于 Luhn 算法与 IIN 号段识别卡组织", "cval.copied": "已复制!",
+      "flt.unit": "美国地址附加公寓/单元号", "flt.unitHint": "启用后部分美国地址追加 Apt/Suite/Unit 单元号，更贴近真实账单地址",
       "addr.native": "原语言", "addr.en": "English (拼音)", "addr.zh": "中文对照",
       "map.openGmaps": "在 Google Maps 中查看 ↗", "map.openAmap": "在高德地图查看 ↗",
       "q.copyAll": "复制全部信息", "q.random": "随机生成 (Space)", "q.taxFree": "随机免税地址",
@@ -73,9 +83,15 @@
       "toast.copied": "已复制", "toast.copyAll": "已复制全部信息", "toast.exported": "JSON 已导出", "toast.exportedCsv": "CSV 已导出",
       "toast.copyFail": "复制失败，请手动复制", "toast.favAdded": "⭐ 已加入收藏夹", "toast.favRemoved": "已从收藏夹移除",
       "toast.ipSuccess": "✓ 已按 IP 归属匹配区域并生成地址", "toast.ipFail": "IP 区域解析失败，请检查网络或更换 IP",
+      "cgen.title": "信用卡批量生成器", "cgen.type": "卡片组织：", "cgen.count": "生成数量：", "cgen.generate": "生成",
+      "cgen.cvv": "CVV:", "cgen.valid": "有效期：", "cgen.copied": "已复制!", "cgen.clickCopy": "点击复制",
+      "cgen.errType": "卡片组织无效", "cgen.errMax": "一次最多只能生成 10 张信用卡", "cgen.errMin": "请至少生成 1 张信用卡",
+      "cgen.note": "卡号按 Luhn 校验位算法生成，有效期 1-5 年、随机持卡人姓名与 CVV，未关联任何金融机构，仅用于开发测试。",
+      "cgen.copyAll": "复制全部", "cgen.exportCsv": "导出 CSV", "cgen.copiedAll": "已复制全部卡片信息", "cgen.exported": "卡号 CSV 已导出", "cgen.empty": "请先生成信用卡",
       "src.osm": "街道来源：OpenStreetMap 真实街道（该城市已缓存 {n} 条街道）",
       "src.pool": "街道来源：内置街道库（OSM 查询中/不可用，重新生成可获取真实街道）",
       "src.jp": "街道来源：日本街区式编号（丁目-番-号）",
+      "map.amapKeyHint": "<b>高德地图 Key 未配置</b><br>本仓库不存放任何密钥。请在控制台执行 <code>USAddressGen.setAmapKey(\"你的高德 Web服务 Key\")</code> 后重新切换到高德，<br>或使用 Google Maps / OpenStreetMap 引擎。",
       "update.btn": "更新数据", "update.version": "数据版本",
       "foot.disclaimer": "本工具生成的所有身份信息、地址、电话、邮箱、卡号及网络指纹均为随机虚构数据，仅供软件开发、表单测试与风控实验使用，请勿用于伪造身份或其他非法用途。",
       "foot.src": "数据来源：GeoNames (CC BY 4.0)、US Census ZCTA Gazetteer、OpenStreetMap (ODbL)",
@@ -89,7 +105,7 @@
         os: "操作系统", userAgent: "User-Agent", docIp: "虚拟 IP", macAddress: "MAC 地址", uuid: "UUID",
         personalUrl: "个人主页", country: "国家", street: "街道", city: "城市", state: "州", stateFull: "州全名",
         zip: "邮编", phone: "电话", email: "邮箱", fullAddress: "完整地址", cardType: "卡片组织", cardNumber: "卡号",
-        cardExpiry: "有效期", cardCvv: "安全码"
+        cardExpiry: "有效期", cardCvv: "安全码", bankAccount: "银行账号", swift: "SWIFT/BIC"
       }
     },
     en: {
@@ -134,6 +150,11 @@
       "f.country": "Country:", "f.street": "Street:", "f.city": "City:", "f.zip": "Postal Code:",
       "f.phone": "Phone:", "f.email": "Email:", "f.fullAddr": "Single Line:",
       "f.cardType": "Card Network:", "f.cardNumber": "Card No.:", "f.cardExpiry": "Expires:", "f.cardCvv": "CVV:",
+      "f.bankAccount": "Bank Account:", "f.swift": "SWIFT/BIC:",
+      "cval.title": "Card Validator", "cval.placeholder": "Enter card number (12-19 digits, spaces allowed)", "cval.check": "Validate",
+      "cval.valid": "✓ Valid card number", "cval.invalid": "✗ Invalid card number", "cval.brand": "Brand", "cval.unknown": "Unknown brand",
+      "cval.hint": "Luhn check + IIN range brand detection", "cval.copied": "Copied!",
+      "flt.unit": "Add apartment/unit number (US)", "flt.unitHint": "Some US addresses get an Apt/Suite/Unit suffix, closer to real billing addresses",
       "addr.native": "Native", "addr.en": "English (Pinyin)", "addr.zh": "Chinese",
       "map.openGmaps": "Open in Google Maps ↗", "map.openAmap": "Open in AMap ↗",
       "q.copyAll": "Copy All", "q.random": "Random Generate (Space)", "q.taxFree": "Random Tax-Free Address",
@@ -146,9 +167,15 @@
       "toast.copied": "Copied", "toast.copyAll": "All info copied", "toast.exported": "JSON exported", "toast.exportedCsv": "CSV exported",
       "toast.copyFail": "Copy failed, please copy manually", "toast.favAdded": "⭐ Added to favorites", "toast.favRemoved": "Removed from favorites",
       "toast.ipSuccess": "✓ Generated address matching detected IP region", "toast.ipFail": "Failed to resolve IP location",
+      "cgen.title": "Credit Card Generator", "cgen.type": "Card Type:", "cgen.count": "Number of Cards:", "cgen.generate": "Generate",
+      "cgen.cvv": "CVV:", "cgen.valid": "Valid Thru:", "cgen.copied": "Copied!", "cgen.clickCopy": "Click to copy",
+      "cgen.errType": "Invalid card type selected.", "cgen.errMax": "You can generate a maximum of 10 credit cards at a time.", "cgen.errMin": "Please enter at least 1 card to generate",
+      "cgen.note": "Numbers are generated with Luhn's algorithm, expiry 1-5 years from today, dummy cardholder names and CVV (Amex 4-digit CID). NOT connected to any financial institution — for development & testing only.",
+      "cgen.copyAll": "Copy All", "cgen.exportCsv": "Export CSV", "cgen.copiedAll": "All cards copied", "cgen.exported": "Cards CSV exported", "cgen.empty": "Generate some cards first",
       "src.osm": "Street source: OpenStreetMap real streets ({n} cached for this city)",
       "src.pool": "Street source: built-in street pool (OSM pending/unavailable, regenerate to try again)",
       "src.jp": "Street source: Japanese district-block format (chome-ban-go)",
+      "map.amapKeyHint": "<b>AMap key not configured</b><br>This repo stores no secrets. Run <code>USAddressGen.setAmapKey(\"your AMap Web key\")</code> in the console and switch to AMap again,<br>or use the Google Maps / OpenStreetMap engines.",
       "update.btn": "Update data", "update.version": "Data version",
       "foot.disclaimer": "All names, addresses, phone numbers, emails, card numbers and network fingerprints are fictional, for development and testing only.",
       "foot.src": "Data sources: GeoNames (CC BY 4.0), US Census ZCTA Gazetteer, OpenStreetMap (ODbL)",
@@ -162,7 +189,7 @@
         os: "OS", userAgent: "User-Agent", docIp: "Mock IP", macAddress: "MAC Address", uuid: "UUID",
         personalUrl: "Profile URL", country: "Country", street: "Street", city: "City", state: "State", stateFull: "State Name",
         zip: "ZIP", phone: "Phone", email: "Email", fullAddress: "Full Address", cardType: "Card Type", cardNumber: "Card No.",
-        cardExpiry: "Expires", cardCvv: "CVV"
+        cardExpiry: "Expires", cardCvv: "CVV", bankAccount: "Bank Account", swift: "SWIFT/BIC"
       }
     }
   };
@@ -198,16 +225,16 @@
     const s = "!@#$%^&*";
     let p = [rand(u), rand(u), rand(l), rand(l), rand(l), rand(d), rand(d), rand(s), rand(u), rand(l), rand(d), rand(s)];
     for (let i = p.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = rint(0, i);
       [p[i], p[j]] = [p[j], p[i]];
     }
     return p.join("");
   }
 
   function makeUuid() {
-    if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+    /* 固定走 RNG 生成（seed 模式下可复现），保持 RFC 4122 v4 格式 */
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
+      const r = Math.floor(RNG.rng() * 16) | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
   }
@@ -426,7 +453,8 @@
     return m.areas ? rand(m.areas) : "";
   }
 
-  function makeStreet(cc, cityName, regionName, forceNumber) {
+  const US_UNIT_TYPES = ["Apt 4B", "Apt 12A", "Apt 3", "Apt 207", "Suite 100", "Ste 210", "Unit 5", "Unit 18", "#2", "#8C"];
+  function makeStreet(cc, cityName, regionName, forceNumber, addUnit) {
     const meta = META[cc];
     let base = null;
     streetSource = "pool";
@@ -441,16 +469,20 @@
     }
     if (!base) base = rand(meta.streets && meta.streets.length ? meta.streets : N.US_STREETS);
     if (streetSource === "pool") streetSource = meta.streets && meta.streets.length ? "local" : "pool";
-    const withNumber = forceNumber || Math.random() < 0.75;
+    const withNumber = forceNumber || coin(0.75);
     if (!withNumber) return base;
+    let out = "";
     switch (meta.num) {
-      case "after": return `${base} ${num}`;
-      case "comma": return `${base}, ${num}`;
-      case "tr": return `${base} No:${num}`;
-      case "id": return `${base} No.${num}`;
-      case "cn": return `${base}${num}号`;
-      default: return `${num} ${base}`;
+      case "after": out = `${base} ${num}`; break;
+      case "comma": out = `${base}, ${num}`; break;
+      case "tr": out = `${base} No:${num}`; break;
+      case "id": out = `${base} No.${num}`; break;
+      case "cn": out = `${base}${num}号`; break;
+      default: out = `${num} ${base}`;
     }
+    // 美国地址按开关附加公寓/单元号（约 35% 概率）
+    if (cc === "US" && addUnit && coin(0.35)) out += " " + rand(US_UNIT_TYPES);
+    return out;
   }
 
   function onStreetsCached(n) {
@@ -472,9 +504,13 @@
 
   function generate(opts) {
     opts = opts || {};
+    // seed 模式：同一 seed 复现完全一致的身份集（OSM 实时街道名除外）
+    if (opts.seed !== undefined && opts.seed !== null) RNG.rng = CC.mulberry32(CC.hashSeed(opts.seed));
+    else RNG.rng = Math.random;
     const cc = currentCountry, meta = META[cc], cdata = DATA[cc];
     const regions = cdata.regions;
     const forceNumber = $("chkHouse") ? $("chkHouse").checked : true;
+    const addUnit = cc === "US" && $("chkUnit") ? $("chkUnit").checked : false;
 
     let rkey = opts.state || ($("selState") ? $("selState").value : null);
     let cityName = opts.city || ($("selCity") ? $("selCity").value : null);
@@ -492,7 +528,7 @@
     const city = cityName ? region.cities.find((x) => x.n.toLowerCase() === cityName.toLowerCase()) : rand(region.cities);
 
     const loc = LOCALES[meta.locale];
-    const gender = Math.random() < 0.5 ? "Male" : "Female";
+    const gender = coin(0.5) ? "Male" : "Female";
     const first = gender === "Male" ? rand(loc.m) : rand(loc.f);
     const last = rand(loc.l);
     const fullName = loc.order === "lf" ? `${last} ${first}` : `${first} ${last}`;
@@ -503,8 +539,9 @@
     const age = new Date().getFullYear() - birthYear;
     const zodiac = getZodiac(birthMonth, birthDay);
 
-    const zip = rand(city.z);
-    const street = makeStreet(cc, city.n, region.n, forceNumber);
+    const zipBase = rand(city.z);
+    const zip = cc === "US" ? `${zipBase}-${String(rint(0, 9999)).padStart(4, "0")}` : zipBase;
+    const street = makeStreet(cc, city.n, region.n, forceNumber, addUnit);
     const stateShort = (rkey !== region.n && /^[A-Za-z]{1,3}$/.test(rkey)) ? rkey : region.n;
     const countryDisplay = lang === "zh" ? meta.zh : meta.name;
     const isCn = cc === "CN" || /\u4e00-\u9fa5/.test(fullName);
@@ -558,19 +595,16 @@
       ? `${fullName}\n${street}\n${city.n}, ${stateShort} ${zip}\nUnited States`
       : `${fullName}\n${street}\n${city.n} ${zip}\n${region.n}\n${countryDisplay}`;
 
-    // 信用卡
-    const brand = rand(N.CARD_BRANDS);
-    let num;
-    if (brand === "American Express") num = luhnComplete((Math.random() < 0.5 ? "34" : "37") + digits(12));
-    else if (brand === "Visa") num = luhnComplete("4" + digits(14));
-    else if (brand === "Mastercard") num = luhnComplete(rand(["51", "52", "53", "54", "55"]) + digits(13));
-    else num = luhnComplete(Math.random() < 0.5 ? "6011" + digits(11) : "65" + digits(13));
-    const numFmt = brand === "American Express"
-      ? num.replace(/^(\d{4})(\d{6})(\d{5})$/, "$1 $2 $3")
-      : num.replace(/^(\d{4})(\d{4})(\d{4})(\d{4})$/, "$1 $2 $3 $4");
-    const now = new Date();
-    const expiry = String(rint(1, 12)).padStart(2, "0") + "/" + (now.getFullYear() + rint(1, 6));
-    const cardCvv = brand === "American Express" ? String(rint(1000, 9999)) : String(rint(100, 999));
+    // 信用卡（品牌跟随国家，走 CC_CORE 统一规则）
+    const brandKey = rand(CC.countryBrands(cc));
+    const cardNum = CC.makeNumber(brandKey, rngf);
+    const numFmt = CC.groupNumber(cardNum, brandKey);
+    const expiry = CC.makeExpiry(rngf, new Date());
+    const cardCvv = CC.makeCvv(brandKey, rngf);
+    const brand = CC.DISPLAY[brandKey] || brandKey;
+
+    // 银行信息（IBAN/ABA/IFSC 等按国家格式 + SWIFT/BIC）
+    const bankInfo = CC.makeBankInfo(cc, rngf);
 
     // 数字身份与网络指纹
     const userHandle = (ascii(first)[0] || "u") + ascii(last) + rint(10, 99);
@@ -628,7 +662,9 @@
       },
       addrBlock, billing,
       cardType: brand, cardNumber: numFmt, cardExpiry: expiry, cardCvv,
+      bankAccount: bankInfo.account, swift: bankInfo.swift,
       location: { lat: city.c[0], lng: city.c[1] },
+      seed: opts.seed !== undefined && opts.seed !== null ? String(opts.seed) : null,
       generatedAt: new Date().toISOString()
     };
 
@@ -641,7 +677,7 @@
   /* ================= 渲染 ================= */
   const FIELD_IDS = [
     "fullName", "gender", "dob", "age", "zodiac", "title", "hair", "blood", "body", "edu",
-    "occupation", "company", "dept", "salary", "account", "trans",
+    "occupation", "company", "dept", "salary", "account", "trans", "bankAccount", "swift",
     "username", "password", "secQ", "secA", "os", "ua", "docIp", "mac", "uuid", "url",
     "country", "street", "city", "state", "stateFull", "zip", "phone", "email", "fullAddr",
     "cardType", "cardNumber", "cardExpiry", "cardCvv"
@@ -658,6 +694,7 @@
       body: current.bodyStats, edu: current.education,
       occupation: current.occupation, company: current.company, dept: current.department,
       salary: current.salary, account: current.accountDisplayName, trans: current.transactionDesc,
+      bankAccount: current.bankAccount, swift: current.swift,
       username: current.username, password: current.password,
       secQ: current.securityQuestion, secA: current.securityAnswer,
       os: current.os, ua: current.userAgent, docIp: current.docIp,
@@ -709,8 +746,14 @@
     if (currentMapType === "google") {
       frame.src = `https://maps.google.com/maps?q=${encodeURIComponent(lat + "," + lng)}&z=15&hl=${lang === "zh" ? "zh-CN" : "en"}&output=embed`;
     } else if (currentMapType === "amap") {
-      // 高德地图：使用高德开放平台或备用坐标标记页
-      frame.src = `https://m.amap.com/picker/?center=${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}&radius=1000&key=AMAP_KEY_REMOVED`;
+      // 高德地图：Key 仅保存在用户本地 localStorage，仓库不存放任何密钥
+      const aKey = localStorage.getItem("addr_amap_key") || "";
+      if (aKey) {
+        frame.src = `https://m.amap.com/picker/?center=${gcjLng.toFixed(6)},${gcjLat.toFixed(6)}&radius=1000&key=${encodeURIComponent(aKey)}`;
+      } else {
+        frame.removeAttribute("src");
+        frame.srcdoc = `<!DOCTYPE html><html><body style="display:flex;align-items:center;justify-content:center;height:100%;margin:0;background:#f8fafc;font-family:system-ui"><div style="text-align:center;color:#64748b;font-size:14px;line-height:2;padding:24px">${t("map.amapKeyHint")}</div></body></html>`;
+      }
     } else {
       // OpenStreetMap
       const d = 0.008;
@@ -828,7 +871,8 @@
       `${L.education}: ${c.education}`, "",
       `=== ${L.occupation} ===`,
       `${L.occupation}: ${c.occupation}`, `${L.company}: ${c.company}`, `${L.department}: ${c.department}`,
-      `${L.salary}: ${c.salary}`, `${L.accountDisplayName}: ${c.accountDisplayName}`, `${L.transactionDesc}: ${c.transactionDesc}`, "",
+      `${L.salary}: ${c.salary}`, `${L.accountDisplayName}: ${c.accountDisplayName}`, `${L.transactionDesc}: ${c.transactionDesc}`,
+      `${L.bankAccount}: ${c.bankAccount}`, `${L.swift}: ${c.swift}`, "",
       `=== ${L.country} & ${L.street} ===`,
       `${L.country}: ${c.country}`, `${L.street}: ${c.street}`, `${L.city}: ${c.city}`,
       `${lb}: ${c.state} (${c.stateFull})`, `${L.zip}: ${c.zip}`, `${L.phone}: ${c.phone}`, `${L.email}: ${c.email}`,
@@ -857,10 +901,10 @@
   function exportCsv(list) {
     const items = list || (current ? [current] : []);
     if (!items.length) return;
-    const headers = ["ID", "Country", "Full Name", "Gender", "Birthday", "Street", "City", "Region", "ZIP", "Phone", "Email", "Card Type", "Card Number", "Expiry", "CVV", "Username", "Password"];
+    const headers = ["ID", "Country", "Full Name", "Gender", "Birthday", "Street", "City", "Region", "ZIP", "Phone", "Email", "Card Type", "Card Number", "Expiry", "CVV", "Bank Account", "SWIFT/BIC", "Username", "Password", "Seed"];
     const rows = items.map((r) => [
       r.id, r.countryCode, `"${r.fullName}"`, r.gender, r.dob, `"${r.street}"`, `"${r.city}"`, `"${r.stateFull}"`, `"${r.zip}"`,
-      `"${r.phone}"`, r.email, r.cardType, `"${r.cardNumber}"`, r.cardExpiry, r.cardCvv, r.username, `"${r.password}"`
+      `"${r.phone}"`, r.email, r.cardType, `"${r.cardNumber}"`, r.cardExpiry, r.cardCvv, `"${r.bankAccount}"`, r.swift, r.username, `"${r.password}"`, r.seed || ""
     ]);
     const csvContent = "\uFEFF" + [headers.join(",")].concat(rows.map((e) => e.join(","))).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -1203,7 +1247,8 @@
   function persistFilters() {
     localStorage.setItem("addr_filters_" + currentCountry, JSON.stringify({
       state: $("selState").value, city: $("selCity").value,
-      house: $("chkHouse").checked, osm: $("chkOsm").checked
+      house: $("chkHouse").checked, osm: $("chkOsm").checked,
+      unit: $("chkUnit") ? $("chkUnit").checked : undefined
     }));
   }
 
@@ -1214,6 +1259,7 @@
       if (f.city) $("selCity").value = f.city;
       if (typeof f.house === "boolean") $("chkHouse").checked = f.house;
       if (typeof f.osm === "boolean") $("chkOsm").checked = f.osm;
+      if (typeof f.unit === "boolean" && $("chkUnit")) $("chkUnit").checked = f.unit;
       syncCombos();
     } catch (e) { }
   }
@@ -1237,6 +1283,10 @@
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const v = t(el.getAttribute("data-i18n"));
       if (v) el.textContent = v;
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const v = t(el.getAttribute("data-i18n-placeholder"));
+      if (v) el.placeholder = v;
     });
     initCountrySelect();
     initContinentTabs();
@@ -1451,10 +1501,200 @@
     }, 800);
   }
 
+  /* ================= 信用卡批量生成器（Luhn 合法测试卡） =================
+   * 逻辑对齐 BetterBugs.io Credit Card Generator 并增强：
+   * 12 个卡组织 BIN/长度规则（银联 16-19 位）、Amex 4 位 CID、
+   * 按品牌分组排版、有效期 1-5 年（MM/YY）、随机持卡人姓名，1-10 张批量生成，
+   * 支持复制全部与 CSV 导出。 */
+  const CC_STYLES = {
+    Visa:            { cls: "cc-visa",    mark: "<span class='mark-visa'>VISA</span>" },
+    MasterCard:      { cls: "cc-master",  mark: "<span class='mark-mc'><i></i><i></i></span>" },
+    AmericanExpress: { cls: "cc-amex",    mark: "<span class='mark-amex'>AMEX</span>" },
+    ChinaUnionPay:   { cls: "cc-upay",    mark: "<span class='mark-up'><i></i><i></i><i></i></span>" },
+    DinersClub:      { cls: "cc-diners",  mark: "<span class='mark-dc'><i></i></span>" },
+    Discover:        { cls: "cc-discover",mark: "<span class='mark-disc'>DISC<i>O</i>VER</span>" },
+    JCB:             { cls: "cc-jcb",     mark: "<span class='mark-jcb'><i>J</i><i>C</i><i>B</i></span>" },
+    Maestro:         { cls: "cc-maestro", mark: "<span class='mark-maestro'>Maestro</span>" },
+    RuPay:           { cls: "cc-rupay",   mark: "<span class='mark-rupay'>RuPay</span>" },
+    Mir:             { cls: "cc-mir",     mark: "<span class='mark-mir'>MIR</span>" },
+    Troy:            { cls: "cc-troy",    mark: "<span class='mark-troy'>troy</span>" },
+    UATP:            { cls: "cc-uatp",    mark: "<span class='mark-uatp'>UATP</span>" },
+    Elo:             { cls: "cc-elo",     mark: "<span class='mark-elo'>elo</span>" },
+    Hipercard:       { cls: "cc-hiper",   mark: "<span class='mark-hiper'>Hipercard</span>" },
+    Dankort:         { cls: "cc-dankort", mark: "<span class='mark-dankort'>Dankort</span>" }
+  };
+  let ccCards = [];
+
+  function ccCardName() {
+    const meta = META[currentCountry] || META.US;
+    const loc = LOCALES[meta.locale] || LOCALES.en;
+    const first = rand(coin(0.5) ? loc.m : loc.f);
+    const last = rand(loc.l);
+    return loc.order === "lf" ? `${last} ${first}` : `${first} ${last}`;
+  }
+
+  function generateCards(type, count) {
+    if (!CC.RULES[type]) { toast(t("cgen.errType")); return []; }
+    if (count > 10) { toast(t("cgen.errMax")); return []; }
+    if (!count || count < 1) { toast(t("cgen.errMin")); return []; }
+    const style = CC_STYLES[type] || { cls: "cc-misc", mark: "" };
+    ccCards = [];
+    for (let i = 0; i < count; i++) {
+      let num;
+      try { num = CC.makeNumber(type, rngf); } catch (e) { continue; }
+      ccCards.push({
+        type,
+        label: CC.DISPLAY[type] || type,
+        number: num,
+        numberFmt: CC.groupNumber(num, type),
+        name: ccCardName(),
+        validThrough: CC.makeExpiry(rngf, new Date()),
+        cvv: CC.makeCvv(type, rngf),
+        cls: style.cls,
+        mark: style.mark
+      });
+    }
+    ccRender();
+    return ccCards;
+  }
+
+  function ccCardText(c) {
+    return `${c.label} | ${c.numberFmt} | CVV ${c.cvv} | ${c.validThrough} | ${c.name}`;
+  }
+
+  function ccCopyAll() {
+    if (!ccCards.length) { toast(t("cgen.empty")); return; }
+    copyText(ccCards.map(ccCardText).join("\n")).then((ok) => {
+      toast(ok ? t("cgen.copiedAll") : t("toast.copyFail"));
+      if (ok) flash($("cgenCopyAll"));
+    });
+  }
+
+  function ccExportCsv() {
+    if (!ccCards.length) { toast(t("cgen.empty")); return; }
+    const headers = ["Brand", "Number", "CVV", "Valid Thru", "Cardholder"];
+    const rows = ccCards.map((c) => [c.label, `"${c.numberFmt}"`, c.cvv, c.validThrough, `"${c.name}"`]);
+    const csvContent = "\uFEFF" + [headers.join(",")].concat(rows.map((e) => e.join(","))).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "test_cards_" + ccCards[0].type + "_" + ccCards.length + "_" + Date.now() + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast(t("cgen.exported"));
+  }
+
+  function ccRender() {
+    const grid = $("cgenGrid");
+    if (!grid) return;
+    grid.innerHTML = ccCards.map((c, i) => `
+      <div class="ccard ${c.cls}" data-i="${i}">
+        <div class="ccard-head"><span class="ccard-brand">${c.label}</span><span class="ccard-chip"></span></div>
+        <div class="cc-copy ccard-num" data-field="number" title="${c.numberFmt}">${c.numberFmt}<span class="ccard-tip">${t("cgen.clickCopy")}</span></div>
+        <div class="ccard-row">
+          <span class="cc-copy ccard-kv" data-field="cvv"><i>${t("cgen.cvv")}</i> ${c.cvv}<span class="ccard-tip">${t("cgen.clickCopy")}</span></span>
+          <span class="cc-copy ccard-kv" data-field="validThrough"><i>${t("cgen.valid")}</i> ${c.validThrough}<span class="ccard-tip">${t("cgen.clickCopy")}</span></span>
+        </div>
+        <div class="ccard-foot">
+          <span class="cc-copy ccard-name" data-field="name">${c.name}<span class="ccard-tip">${t("cgen.clickCopy")}</span></span>
+          <span class="ccard-mark">${c.mark}</span>
+        </div>
+      </div>`).join("");
+  }
+
+  function ccCopyHandler(e) {
+    const wrap = e.target.closest(".cc-copy");
+    if (!wrap) return;
+    const holder = wrap.closest(".ccard");
+    const card = holder && ccCards[+holder.dataset.i];
+    if (!card) return;
+    const raw = card[wrap.dataset.field];
+    if (!raw) return;
+    copyText(raw).then((ok) => {
+      const tip = wrap.querySelector(".ccard-tip");
+      if (!ok) { toast(t("toast.copyFail")); return; }
+      if (tip) {
+        tip.textContent = t("cgen.copied");
+        wrap.classList.add("copied");
+        setTimeout(() => { wrap.classList.remove("copied"); tip.textContent = t("cgen.clickCopy"); }, 2000);
+      } else {
+        toast(t("toast.copied"));
+      }
+    });
+  }
+
+  /* ================= 信用卡校验器 =================
+   * 对齐 BetterBugs Credit Card Validator：Luhn 校验 + IIN 号段识别品牌 */
+  function runValidator() {
+    const input = $("cvalInput"), out = $("cvalResult");
+    if (!input || !out) return;
+    const raw = input.value.trim();
+    if (!raw) { input.focus(); return; }
+    const res = CC.validate(raw);
+    const known = res.brand !== "Unknown";
+    out.innerHTML = `
+      <span class="cval-badge ${res.valid ? "ok" : "bad"}">${res.valid ? t("cval.valid") : t("cval.invalid")}</span>
+      <span class="cval-chip">${t("cval.brand")}: <b>${known ? CC.DISPLAY[res.brand] : t("cval.unknown")}</b></span>
+      ${known ? `<span class="cval-chip">${res.formatted}</span>` : ""}
+      <span class="cval-len">${res.digits.length} digit(s)</span>`;
+    out.classList.toggle("show", true);
+    if (res.valid) toast(t("cval.valid") + (known ? " · " + CC.DISPLAY[res.brand] : ""));
+    else toast(t("cval.invalid"));
+  }
+
+  function bindCgen() {
+    if (!$("cgenBtn")) return;
+    const run = () => {
+      const qty = parseInt($("cgenQty").value || "0", 10);
+      generateCards($("cgenType").value, isNaN(qty) ? 0 : qty);
+    };
+    $("cgenBtn").addEventListener("click", run);
+    $("cgenType").addEventListener("change", () => {
+      $("cgenQty").value = "1";
+      ccCards = []; ccRender();
+    });
+    $("cgenGrid").addEventListener("click", ccCopyHandler);
+    if ($("cgenCopyAll")) $("cgenCopyAll").addEventListener("click", ccCopyAll);
+    if ($("cgenExportCsv")) $("cgenExportCsv").addEventListener("click", ccExportCsv);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      if (!(e.target.closest && e.target.closest("#cardCgen"))) return;
+      e.preventDefault();
+      run();
+    });
+
+    // 校验器
+    if ($("cvalBtn")) {
+      $("cvalBtn").addEventListener("click", runValidator);
+      $("cvalInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); runValidator(); }
+      });
+      $("cvalInput").addEventListener("input", () => {
+        const v = $("cvalInput").value.replace(/[^\d]/g, "");
+        if (v.length >= 12) runValidator();
+        else { const out = $("cvalResult"); out.classList.remove("show"); }
+      });
+    }
+  }
+
   /* ================= 全局 API ================= */
   window.USAddressGen = {
     generate,
     setCountry,
+    generateCards(type, count) {
+      if (type !== undefined && type !== null && !CC.RULES[type]) { toast(t("cgen.errType")); return []; }
+      const ty = CC.RULES[type] ? type : ($("cgenType") ? $("cgenType").value : "Visa");
+      const n = typeof count === "number" ? count : 1;
+      return generateCards(ty, n);
+    },
+    validateCard(numStr) { return CC.validate(numStr); },
+    setAmapKey(k) {
+      if (k) localStorage.setItem("addr_amap_key", String(k));
+      else localStorage.removeItem("addr_amap_key");
+      renderMap();
+    },
+    get amapConfigured() { return !!localStorage.getItem("addr_amap_key"); },
+    get cards() { return ccCards; },
     get country() { return currentCountry; },
     get last() { return current; },
     setLang(l) { lang = l === "en" ? "en" : "zh"; localStorage.setItem("addr_lang", lang); applyI18n(); },
@@ -1616,6 +1856,9 @@
     $("chkOsm").addEventListener("change", persistFilters);
     $("selCountry").addEventListener("change", (e) => setCountry(e.target.value));
 
+    // 信用卡批量生成器
+    bindCgen();
+
     $("hotToggle").addEventListener("click", () => {
       const grid = $("hotCities");
       grid.classList.toggle("collapsed");
@@ -1661,6 +1904,8 @@
         <tr><td><code>state</code></td><td>州/省</td><td><code>?country=US&state=CA</code></td></tr>
         <tr><td><code>city</code></td><td>城市名</td><td><code>?city=Los Angeles</code></td></tr>
         <tr><td><code>free</code></td><td>1=美国免税州</td><td><code>?free=1</code></td></tr>
+        <tr><td><code>cards</code></td><td>深链批量生成测试卡（品牌:数量）</td><td><code>?cards=JCB:5</code></td></tr>
+        <tr><td><code>seed</code></td><td>种子模式，相同 seed 复现相同身份</td><td><code>?seed=demo42</code></td></tr>
       </table>` : `<p>See README.md for full console & URL API guide.</p>`,
     faq: () => lang === "zh" ? `
       <h4>Q: 生成的地址是真实存在的吗？</h4>
@@ -1703,13 +1948,26 @@
       if (p.get("house") === "0") $("chkHouse").checked = false;
       if (p.get("house") === "1") $("chkHouse").checked = true;
     }
+    if (p.get("unit") === "0" && $("chkUnit")) $("chkUnit").checked = false;
+    if (p.get("amapkey")) localStorage.setItem("addr_amap_key", p.get("amapkey"));
 
     const opts = {};
     if (p.get("free") === "1") opts.taxFree = true;
+    if (p.get("seed")) opts.seed = p.get("seed");
     if (hasUrlFilter && $("selState").value) opts.state = $("selState").value;
     if (hasUrlFilter && $("selCity").value) opts.city = $("selCity").value;
 
     generate(opts);
+
+    // ?cards=BRAND:COUNT —— 深链直接批量生成测试卡（如 ?cards=JCB:5）
+    const cardsParam = p.get("cards");
+    if (cardsParam) {
+      const m = /^([A-Za-z]+)(?::(\d{1,2}))?$/.exec(cardsParam.trim());
+      if (m) {
+        const key = Object.keys(CC.RULES).find((k) => k.toLowerCase() === m[1].toLowerCase());
+        if (key) generateCards(key, Math.min(Math.max(parseInt(m[2] || "1", 10) || 1, 1), 10));
+      }
+    }
   }
 
   boot();

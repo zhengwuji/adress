@@ -7,3 +7,4 @@ server.log
 .DS_Store
 Thumbs.db
 .wrangler/
+_tmp/

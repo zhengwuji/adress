@@ -6,7 +6,7 @@
 <title>美国与全球真实地址生成器 - 多国身份、住宅地址、账单表单与数字指纹</title>
 <meta name="description" content="全功能真实多国地址与身份信息生成器：支持全球36国真实城市/邮编/住宅地址、IP区域归属地精准生成、Google账单地址表单逐格复制、虚拟网络数字指纹、高德/谷歌双地图与中英拼音对照。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cpath d='M16 6a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 16 10a2.5 2.5 0 0 1 0 5.5z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261107a">
+<link rel="stylesheet" href="css/style.css?v=20261112e">
 </head>
 <body>
 
@@ -194,6 +194,8 @@
           <div class="row"><span class="lb" data-i18n="f.dept">部门/性质：</span><span class="val" id="f-dept">--</span><button class="cp" data-copy="department"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.salary">预估月薪：</span><span class="val" id="f-salary">--</span><button class="cp" data-copy="salary"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.account">银行账户：</span><span class="val" id="f-account">--</span><button class="cp" data-copy="accountDisplayName"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.bankAccount">银行账号：</span><span class="val mono" id="f-bankAccount">--</span><button class="cp" data-copy="bankAccount"><svg><use href="#i-copy"/></svg></button></div>
+          <div class="row"><span class="lb" data-i18n="f.swift">SWIFT/BIC：</span><span class="val mono" id="f-swift">--</span><button class="cp" data-copy="swift"><svg><use href="#i-copy"/></svg></button></div>
           <div class="row"><span class="lb" data-i18n="f.trans">模拟交易：</span><span class="val" id="f-trans">--</span><button class="cp" data-copy="transactionDesc"><svg><use href="#i-copy"/></svg></button></div>
         </div>
       </section>
@@ -379,6 +381,10 @@
             <input type="checkbox" id="chkOsm" checked>
             <span><b data-i18n="flt.osm">使用 OpenStreetMap 真实街道名</b><i data-i18n="flt.osmHint">启用后联网查询所选城市的真实街道名（如谷歌地图所示），失败时自动回退内置街道库</i></span>
           </label>
+          <label class="chk">
+            <input type="checkbox" id="chkUnit" checked>
+            <span><b data-i18n="flt.unit">美国地址附加公寓/单元号</b><i data-i18n="flt.unitHint">启用后部分美国地址追加 Apt/Suite/Unit 单元号，更贴近真实账单地址</i></span>
+          </label>
           <button class="btn solid full" id="btnRegen"><svg><use href="#i-refresh"/></svg><span data-i18n="q.regen">重新生成</span></button>
         </div>
       </section>
@@ -391,6 +397,53 @@
         <div class="hot-grid" id="hotCities"></div>
       </section>
     </div>
+
+    <!-- 信用卡批量生成器（Luhn 合法测试卡）· 通栏 -->
+    <section class="card card-wide" id="cardCgen">
+      <h2><span class="cicon blue"><svg><use href="#i-card"/></svg></span><span data-i18n="cgen.title">信用卡批量生成器</span></h2>
+      <div class="cgen-controls">
+        <div class="cgen-field">
+          <label class="cgen-lb" for="cgenType" data-i18n="cgen.type">卡片组织：</label>
+          <select id="cgenType">
+            <option value="Visa">Visa</option>
+            <option value="AmericanExpress">AmericanExpress</option>
+            <option value="ChinaUnionPay">ChinaUnionPay</option>
+            <option value="DinersClub">DinersClub</option>
+            <option value="Discover">Discover</option>
+            <option value="JCB">JCB</option>
+            <option value="MasterCard">MasterCard</option>
+            <option value="Maestro">Maestro</option>
+            <option value="RuPay">RuPay</option>
+            <option value="Mir">Mir</option>
+            <option value="Troy">Troy</option>
+            <option value="UATP">UATP</option>
+            <option value="Elo">Elo</option>
+            <option value="Hipercard">Hipercard</option>
+            <option value="Dankort">Dankort</option>
+          </select>
+        </div>
+        <div class="cgen-field">
+          <label class="cgen-lb" for="cgenQty" data-i18n="cgen.count">生成数量：</label>
+          <input type="number" id="cgenQty" min="1" max="10" value="1" inputmode="numeric">
+        </div>
+        <button class="btn solid cgen-btn" id="cgenBtn"><svg><use href="#i-bolt"/></svg><span data-i18n="cgen.generate">生成</span></button>
+        <button class="btn soft cgen-btn" id="cgenCopyAll"><svg><use href="#i-copy"/></svg><span data-i18n="cgen.copyAll">复制全部</span></button>
+        <button class="btn soft cgen-btn" id="cgenExportCsv"><svg><use href="#i-download"/></svg><span data-i18n="cgen.exportCsv">导出 CSV</span></button>
+      </div>
+      <div class="cgen-grid" id="cgenGrid"></div>
+      <p class="cgen-note" data-i18n="cgen.note">卡号按 Luhn 校验位算法生成，有效期 1-5 年、随机持卡人姓名与 CVV，未关联任何金融机构，仅用于开发测试。</p>
+    </section>
+
+    <!-- 信用卡校验器 · 通栏 -->
+    <section class="card card-wide" id="cardCval">
+      <h2><span class="cicon blue"><svg><use href="#i-shield"/></svg></span><span data-i18n="cval.title">信用卡校验器</span></h2>
+      <div class="cval-row">
+        <input type="text" id="cvalInput" class="cval-input" data-i18n-placeholder="cval.placeholder" placeholder="输入卡号（可含空格，12-19 位）" autocomplete="off" spellcheck="false">
+        <button class="btn solid cgen-btn" id="cvalBtn"><svg><use href="#i-check-circle"/></svg><span data-i18n="cval.check">校验</span></button>
+      </div>
+      <div class="cval-result" id="cvalResult"></div>
+      <p class="cgen-note" data-i18n="cval.hint">基于 Luhn 算法与 IIN 号段识别卡组织</p>
+    </section>
 
   </div>
 </main>
@@ -410,8 +463,9 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="js/countries_data.js?v=20261003"></script>
-<script src="js/names.js?v=20261107a"></script>
-<script src="js/app.js?v=20261107a"></script>
+<script src="js/countries_data.js?v=20261112e"></script>
+<script src="js/names.js?v=20261112e"></script>
+<script src="js/cc_core.js?v=20261112e"></script>
+<script src="js/app.js?v=20261112e"></script>
 </body>
 </html>
